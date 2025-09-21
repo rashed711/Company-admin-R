@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 // FIX: Converted the Button component to be polymorphic to support rendering as different HTML elements using an 'as' prop.
@@ -28,19 +29,19 @@ const Button = <E extends React.ElementType = 'button'>({
   // Determine the component to render based on the `as` prop, defaulting to 'button'.
   const Component = as || 'button';
   
-  const baseClasses = "font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200";
+  const baseClasses = "font-bold rounded-lg focus:outline-none focus:ring-4 transition-all duration-300 ease-in-out inline-flex items-center justify-center";
   
   const variantClasses = {
-    primary: "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-500",
-    secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500",
-    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-    outline: "bg-transparent border border-gray-300 text-gray-700 dark:text-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-sky-500",
+    primary: "bg-sky-600 text-white hover:bg-sky-700 focus:ring-sky-300 dark:focus:ring-sky-800 shadow-sm hover:shadow-md",
+    secondary: "bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-300 dark:focus:ring-gray-800 shadow-sm hover:shadow-md",
+    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-300 dark:focus:ring-red-800 shadow-sm hover:shadow-md",
+    outline: "bg-transparent border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:ring-gray-200 dark:focus:ring-gray-700",
   };
 
   const sizeClasses = {
-    sm: "py-1 px-2 text-sm",
-    md: "py-2 px-4 text-base",
-    lg: "py-3 px-6 text-lg",
+    sm: "py-1.5 px-3 text-xs",
+    md: "py-2 px-4 text-sm",
+    lg: "py-3 px-6 text-base",
   };
 
   // Merge the component's classes with any `className` passed in props.

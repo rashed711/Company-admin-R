@@ -33,14 +33,14 @@ const Header = () => {
   }
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 shadow-sm">
       <div>
-        <h2 className="text-xl font-semibold">{getPageTitle(location.pathname)}</h2>
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{getPageTitle(location.pathname)}</h2>
       </div>
       <div className="flex items-center space-x-4 rtl:space-x-reverse">
-        <div className="flex items-center">
+        <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
             <UserIcon />
-            <span className="hidden sm:inline mx-2">{user?.name || t('username_placeholder')}</span>
+            <span className="hidden sm:inline mx-2 text-sm font-medium">{user?.name || t('username_placeholder')}</span>
         </div>
         <Button variant="outline" size="sm" onClick={logout}>
           {t('logout')}

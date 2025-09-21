@@ -1,14 +1,15 @@
 
 import React from 'react';
-import { Quotation, Invoice, CompanyInfo, DocumentTemplate, LocaleConfig } from '../../../types';
+import { Quotation, Invoice, CompanyInfo, DocumentTemplate, LocaleConfig, SupplierInvoice, InvoiceItem, SupplierInvoiceItem } from '../../../types';
 import { useTranslation } from '../../../services/localization';
 
-type Document = Quotation | Invoice;
+type Document = Quotation | Invoice | SupplierInvoice;
+type DocumentType = 'quotation' | 'invoice' | 'supplier-invoice';
 type TranslationKeys = ReturnType<typeof useTranslation>['t'];
 
 interface DocumentViewerProps {
   document: Document;
-  type: 'quotation' | 'invoice';
+  type: DocumentType;
   companyInfo: CompanyInfo;
   template: DocumentTemplate;
   config: LocaleConfig;
@@ -17,21 +18,32 @@ interface DocumentViewerProps {
 const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, companyInfo, template, config }) => {
   const { t } = useTranslation();
   const isRTL = config.dir === 'rtl';
+
+  const isSupplierInvoice = type === 'supplier-invoice';
   
-  const docTitle = type === 'quotation' ? t('quotation') : t('invoice');
+  const docTitle = type === 'quotation' ? t('quotation') : isSupplierInvoice ? t('purchase_invoice') : t('invoice');
   const docNumberLabel = type === 'quotation' ? t('quotation_no') : t('invoice_no');
   
   const currency = type === 'quotation' ? '' : ` ${config.currencySymbol}`;
   
-  // Specific to invoice
+  // Specific to invoice types
   const dueDateLabel = t('due_date');
-  const dueDateValue = (document as Invoice).due_date;
+  const dueDateValue = (document as (Invoice | SupplierInvoice)).due_date;
+  
+  const entityName = isSupplierInvoice ? (document as SupplierInvoice).supplier_name : (document as Invoice).customer_name;
 
-  const quotation = document as Quotation; // For easier access to new fields
+  const doc = document as any;
+  const docTypeLabel = type === 'quotation' ? t('quotation_type') : t('invoice_type');
+  const docTypeValue = type === 'quotation' ? doc.quotation_type : (type === 'invoice' ? doc.invoice_type : doc.supplier_invoice_type);
 
   const companyHeaderDetails: { key: keyof CompanyInfo; label?: Parameters<TranslationKeys>[0] }[] = isRTL
     ? [ { key: 'NAME_AR' }, { key: 'ADDRESS_AR' }, { key: 'PHONE', label: 'phone' }, { key: 'EMAIL', label: 'email' }, { key: 'TAX_NUMBER', label: 'tax_number' } ]
     : [ { key: 'NAME' }, { key: 'ADDRESS' }, { key: 'PHONE', label: 'phone' }, { key: 'EMAIL', label: 'email' }, { key: 'TAX_NUMBER', label: 'tax_number' } ];
+
+  const itemsSubtotal = (document.items as any[]).reduce((sum: number, item) => sum + item.total, 0);
+  const discountValue = document.discount_type === 'percentage' 
+    ? itemsSubtotal * ((document.discount_amount || 0) / 100)
+    : (document.discount_amount || 0);
 
   return (
     <div className="bg-gray-200 dark:bg-gray-900 p-4 sm:p-8 rounded-lg">
@@ -63,53 +75,46 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                 </div>
                 <div className={`text-${isRTL ? 'left' : 'right'}`}>
                     <h2 className="text-4xl font-bold uppercase">{docTitle}</h2>
-                    {type === 'invoice' && (
-                        <>
-                            <p className="mt-2">{`${docNumberLabel}: ${document.id}`}</p>
-                            <p>{`${t('issue_date')}: ${document.issue_date}`}</p>
-                            <p>{`${dueDateLabel}: ${dueDateValue}`}</p>
-                        </>
+                    <p className="mt-2">{`${docNumberLabel}: ${document.id}`}</p>
+                    <p>{`${t('issue_date')}: ${document.issue_date}`}</p>
+                    {type !== 'quotation' && (
+                        <p>{`${dueDateLabel}: ${dueDateValue}`}</p>
                     )}
                 </div>
             </header>
             
             {/* Details Section */}
-            {type === 'quotation' ? (
-                <section className="mb-12 text-sm">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-2 p-4 border rounded-lg dark:border-gray-700">
-                        <div><span className="font-semibold">{t('company_name')}:</span> {quotation.company_name || '-'}</div>
-                        <div><span className="font-semibold">{t('contact_person')}:</span> {quotation.contact_person || '-'}</div>
-                        <div><span className="font-semibold">{docNumberLabel}:</span> {document.id}</div>
-                        <div><span className="font-semibold">{t('project_name')}:</span> {quotation.project_name || '-'}</div>
-                        <div><span className="font-semibold">{t('quotation_type')}:</span> {quotation.quotation_type || '-'}</div>
-                        <div><span className="font-semibold">{t('issue_date')}:</span> {document.issue_date}</div>
-                    </div>
-                </section>
-            ) : (
-                <section className="mb-12">
-                    <h3 className={`text-lg font-semibold mb-2 pb-1 border-b-2 border-gray-200 dark:border-gray-700 text-${isRTL ? 'right' : 'left'}`}>{t('bill_to')}</h3>
-                    <p className="font-bold">{document.customer_name || t('unspecified_customer')}</p>
-                </section>
-            )}
+            <section className="mb-12 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 p-4 border rounded-lg dark:border-gray-700">
+                    <div><span className="font-semibold">{isSupplierInvoice ? t('supplier') : t('customer')}:</span> {entityName || '-'}</div>
+                    <div><span className="font-semibold">{t('contact_person')}:</span> {doc.contact_person || '-'}</div>
+                    <div><span className="font-semibold">{t('project_name')}:</span> {doc.project_name || '-'}</div>
+                    <div><span className="font-semibold">{docTypeLabel}:</span> {docTypeValue || '-'}</div>
+                </div>
+            </section>
 
             {/* Items Table */}
             <section>
                 <table className="w-full text-sm text-start">
                     <thead className="bg-gray-100 dark:bg-gray-700">
                         <tr>
+                            <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('product_name')}</th>
                             <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('description')}</th>
+                            <th className="p-3 font-semibold text-center">{t('unit')}</th>
                             <th className="p-3 font-semibold text-center">{t('quantity')}</th>
                             <th className={`p-3 font-semibold text-${isRTL ? 'left' : 'right'}`}>{t('price')}</th>
                             <th className={`p-3 font-semibold text-${isRTL ? 'left' : 'right'}`}>{t('total')}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {document.items.map(item => (
+                        {(document.items as (InvoiceItem | SupplierInvoiceItem)[]).map((item) => (
                             <tr key={item.id} className="border-b dark:border-gray-700">
                                 <td className="p-3">{item.product_name}</td>
+                                <td className="p-3">{item.description}</td>
+                                <td className="p-3 text-center">{item.unit}</td>
                                 <td className="p-3 text-center">{item.quantity}</td>
-                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
-                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
+                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${(item.price as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
+                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${(item.total as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -120,9 +125,15 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
             <section className="flex justify-end mt-8">
                 <div className="w-full sm:w-1/2 md:w-1/3">
                     <div className="space-y-2">
-                        <div className="flex justify-between"><span>{t('subtotal')}</span><span>{`${document.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
-                        <div className="flex justify-between"><span>{`${t('tax')} (${document.tax_rate}%)`}</span><span>{`${document.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
-                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${document.total.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        <div className="flex justify-between"><span>{t('subtotal_before_discount')}</span><span>{`${(itemsSubtotal as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        {discountValue > 0 && (
+                            <div className="flex justify-between"><span>{t('discount')}</span><span>{`-${(discountValue as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        )}
+                        <div className="flex justify-between font-semibold pt-1 border-t dark:border-gray-700"><span>{t('subtotal')}</span><span>{`${(document.subtotal as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        {document.is_taxable && (
+                           <div className="flex justify-between"><span>{`${t('tax')} (${document.tax_rate}%)`}</span><span>{`${(document.tax_amount as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        )}
+                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${(document.total as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                     </div>
                 </div>
             </section>

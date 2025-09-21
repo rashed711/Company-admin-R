@@ -14,17 +14,17 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
+      className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center backdrop-blur-sm"
       aria-labelledby="modal-title"
       role="dialog"
       aria-modal="true"
       onClick={onClose}
     >
       <div 
-        className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md m-4"
+        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg m-4"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
-        <div className="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
+        <div className="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
             {title}
           </h3>

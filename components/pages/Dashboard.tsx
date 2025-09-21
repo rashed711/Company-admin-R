@@ -27,7 +27,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6">{t('welcome_to_enjaz')}</h1>
+      <h1 className="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-8">{t('welcome_to_enjaz')}</h1>
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -40,8 +40,8 @@ const Dashboard = () => {
 
       {/* Sales Chart */}
       {showFinancials && (
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">{t('sales_and_purchases_overview')}</h2>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">{t('sales_and_purchases_overview')}</h2>
           <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
               <BarChart
@@ -49,20 +49,20 @@ const Dashboard = () => {
                 margin={{ top: 20, right: 20, left: -10, bottom: 5 }}
                 layout="horizontal"
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128, 128, 128, 0.2)" />
                 <XAxis dataKey="name" />
                 <YAxis reversed={config.dir === 'rtl'} orientation={config.dir === 'rtl' ? 'right' : 'left'}/>
                 <Tooltip
                   contentStyle={{ 
-                      backgroundColor: 'rgba(31, 41, 55, 0.8)', 
+                      backgroundColor: 'rgba(31, 41, 55, 0.9)', 
                       borderColor: '#4B5563',
-                      borderRadius: '0.5rem'
+                      borderRadius: '0.75rem'
                   }}
                   cursor={{fill: 'rgba(128, 128, 128, 0.1)'}}
                 />
                 <Legend />
-                <Bar dataKey={t('sales')} fill="#38bdf8" />
-                <Bar dataKey={t('purchases')} fill="#f87171" />
+                <Bar dataKey={t('sales')} fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                <Bar dataKey={t('purchases')} fill="#f87171" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

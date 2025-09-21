@@ -1,5 +1,5 @@
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User, Role, Permission, ALL_PERMISSIONS } from '../types';
 
 // Define available roles and their permissions
@@ -67,8 +67,19 @@ const MOCKED_ADMIN_USER: User = {
     role: ROLES.admin,
 };
 
+const USER_STORAGE_KEY = 'enjaz-user';
+
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const item = window.localStorage.getItem(USER_STORAGE_KEY);
+      return item ? JSON.parse(item) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
+  
   const isAuthenticated = !!user;
 
   const hasPermission = (permission: string): boolean => {
@@ -87,7 +98,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return new Promise(resolve => {
         setTimeout(() => {
             if (email === 'admin@enjaz.app' && pass === 'password') {
-                setUser(MOCKED_ADMIN_USER);
+                const loggedInUser = MOCKED_ADMIN_USER;
+                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(loggedInUser));
+                setUser(loggedInUser);
                 resolve(true);
             } else {
                 resolve(false);
@@ -97,6 +110,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    localStorage.removeItem(USER_STORAGE_KEY);
     setUser(null);
   };
 

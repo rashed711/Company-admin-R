@@ -6,18 +6,11 @@ import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
 import { ROLES } from '../../../contexts/AuthContext';
 import Modal from '../../ui/Modal';
-
-// Mock data for UsersList, now includes a manager-subordinate relationship
-const mockUsers: User[] = [
-  { id: 1, name: 'مدير النظام', email: 'admin@enjaz.app', role: ROLES.admin, manager_id: null },
-  { id: 2, name: 'محاسب أول', email: 'accountant@enjaz.app', role: ROLES.accountant, manager_id: 1 },
-  { id: 3, name: 'مدير مبيعات', email: 'manager@enjaz.app', role: ROLES.sales_manager, manager_id: 1 },
-  { id: 4, name: 'مندوب مبيعات', email: 'sales@enjaz.app', role: ROLES.sales_person, manager_id: 3 },
-];
+import { mockUsersData } from '../../../services/mockData';
 
 const UsersList = () => {
   const { t } = useTranslation();
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>(mockUsersData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -60,19 +53,13 @@ const UsersList = () => {
     }},
   ];
 
-  const actions = (row: User) => (
-    <div className="flex space-x-2 rtl:space-x-reverse">
-      <Button variant="outline" size="sm" onClick={() => handleEditClick(row)}>{t('edit')}</Button>
-    </div>
-  );
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('user_management')}</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('user_management')}</h1>
         <Button variant="primary">{t('new_user')}</Button>
       </div>
-      <Table columns={columns} data={users} actions={actions} />
+      <Table columns={columns} data={users} onRowClick={handleEditClick} />
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={t('edit_user')}>
         {selectedUser && (

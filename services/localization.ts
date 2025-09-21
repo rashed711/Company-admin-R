@@ -50,6 +50,21 @@ type TranslationKeys = {
   permissions: string;
   manager: string;
   module: string;
+  category: string;
+  unit: string;
+  avg_purchase_price: string;
+  avg_selling_price: string;
+  product_name: string;
+  apply_tax: string;
+  discount: string;
+  discount_type: string;
+  percentage: string;
+  amount_value: string;
+  subtotal_before_discount: string;
+  time: string;
+  company: string;
+  created_by: string;
+  linked_document: string;
 
   // Page specific
   welcome_to_enjaz: string;
@@ -65,6 +80,8 @@ type TranslationKeys = {
   supplier: string;
   account_statement: string;
   statement_for_customer: string;
+  statement_for_supplier: string;
+  supplier_statement: string;
   opening_balance: string;
   debit: string;
   credit: string;
@@ -80,10 +97,12 @@ type TranslationKeys = {
   roles: string;
   quotation_details: string;
   invoice_details: string;
+  purchase_invoice_details: string;
   company_name: string;
   contact_person: string;
   project_name: string;
   quotation_type: string;
+  invoice_type: string;
   currency: string;
   currency_egp: string;
   
@@ -122,6 +141,10 @@ type TranslationKeys = {
   share: string;
   add_item: string;
   edit_quotation: string;
+  new_product: string;
+  edit_product: string;
+  edit_invoice: string;
+  edit_supplier_invoice: string;
 
   // Others
   product: string;
@@ -134,6 +157,9 @@ type TranslationKeys = {
   'en-US': string;
   email_address: string;
   password: string;
+  select_product: string;
+  select_customer: string;
+  select_supplier: string;
 
   // Statuses
   draft: string;
@@ -158,6 +184,9 @@ type TranslationKeys = {
   invoice: string;
   quotation: string;
   receipt_voucher: string;
+  payment_voucher: string;
+  purchase_invoice: string;
+  supplier_information: string;
 
   // Months
   month_jan: string;
@@ -244,13 +273,13 @@ const arSATranslations: TranslationKeys = {
   purchases: 'المشتريات', purchase_invoices: 'فواتير المشتريات', contacts: 'جهات الاتصال',
   customers: 'العملاء', suppliers: 'الموردين', settings: 'الإعدادات', products_and_services: 'المنتجات والخدمات',
   total: 'الإجمالي', status: 'الحالة', issue_date: 'تاريخ الإصدار', due_date: 'تاريخ الاستحقاق', name: 'الاسم',
-  email: 'البريد الإلكتروني', phone: 'الهاتف', address: 'العنوان', description: 'الوصف', price: 'السعر',
+  email: 'البريد الإلكتروني', phone: 'الهاتف', address: 'العنوان', description: 'الوصف', price: 'سعر البيع',
   type: 'النوع', welcome_to_enjaz: 'مرحباً بك في إنجاز', total_sales: 'إجمالي المبيعات',
   total_purchases: 'إجمالي المشتريات', customer_count: 'عدد العملاء', supplier_count: 'عدد الموردين',
   sales_and_purchases_overview: 'نظرة عامة على المبيعات والمشتريات', quotation_no: 'رقم العرض',
-  customer: 'العميل', expiry_date: 'تاريخ الانتهاء', invoice_no: 'رقم الفاتورة', supplier: 'المورد',
+  customer: 'الشركة', expiry_date: 'تاريخ الانتهاء', invoice_no: 'رقم الفاتورة', supplier: 'المورد',
   new_quotation: 'إنشاء عرض سعر جديد', new_invoice: 'إنشاء فاتورة جديدة', new_supplier_invoice: 'إضافة فاتورة جديدة',
-  new_customer: 'إضافة عميل جديد', new_supplier: 'إضافة مورد جديد', new_product_service: 'إضافة منتج/خدمة',
+  new_customer: 'إضافة شركة جديدة', new_supplier: 'إضافة مورد جديد', new_product_service: 'إضافة منتج/خدمة',
   product: 'منتج', service: 'خدمة', invoices_menu: 'الفواتير', sales_invoices: 'فواتير المبيعات',
   app_settings: 'إعدادات التطبيق', locale: 'اللغة والمنطقة', tax_rate: 'نسبة الضريبة', 'ar-SA': 'العربية - السعودية',
   'ar-EG': 'العربية - مصر', 'en-US': 'الإنجليزية - الولايات المتحدة', save_changes: 'حفظ التغييرات',
@@ -262,9 +291,11 @@ const arSATranslations: TranslationKeys = {
   conversion_error: 'فشل تحويل عرض السعر', converting: 'جاري التحويل...',
   download_pdf: 'تحميل PDF', create: 'إنشاء', delete: 'حذف', print: 'طباعة', convert: 'تحويل', view_statement: 'كشف حساب',
   module: 'الوحدة', manager: 'المدير المباشر', share: 'مشاركة',
-  add_item: 'إضافة بند', edit_quotation: 'تعديل عرض السعر',
+  add_item: 'إضافة بند', edit_quotation: 'تعديل عرض السعر', new_product: 'منتج جديد', edit_product: 'تعديل المنتج',
+  edit_invoice: 'تعديل الفاتورة', edit_supplier_invoice: 'تعديل فاتورة المشتريات',
   bill_to: 'فاتورة إلى:', quantity: 'الكمية', thank_you_message: 'شكراً لتعاملكم معنا!',
-  unspecified_customer: 'عميل غير محدد', invoice: 'فاتورة', quotation: 'عرض سعر', tax_number: 'الرقم الضريبي',
+  unspecified_customer: 'شركة غير محددة', invoice: 'فاتورة', quotation: 'عرض سعر', tax_number: 'الرقم الضريبي',
+  purchase_invoice: 'فاتورة مشتريات', supplier_information: 'بيانات المورد',
   username_placeholder: 'اسم المستخدم', month_jan: 'يناير', month_feb: 'فبراير', month_mar: 'مارس',
   month_apr: 'أبريل', month_may: 'مايو', month_jun: 'يونيو',
   accounting: 'المحاسبة', receipt_vouchers: 'سندات القبض', payment_vouchers: 'سندات الصرف',
@@ -272,8 +303,9 @@ const arSATranslations: TranslationKeys = {
   amount: 'المبلغ', payment_method: 'طريقة الدفع', cash: 'نقداً', bank_transfer: 'تحويل بنكي', cheque: 'شيك',
   date: 'التاريخ', new_receipt_voucher: 'سند قبض جديد', new_payment_voucher: 'سند صرف جديد',
   new_account: 'إضافة حساب جديد', new_journal_entry: 'إضافة قيد يومية',
-  account_statement: 'كشف حساب', statement_for_customer: 'كشف حساب للعميل', opening_balance: 'رصيد افتتاحي',
-  debit: 'مدين', credit: 'دائن', balance: 'الرصيد', receipt_voucher: 'سند قبض',
+  account_statement: 'كشف حساب', statement_for_customer: 'كشف حساب للشركة', statement_for_supplier: 'كشف حساب للمورد',
+  supplier_statement: 'كشف حساب مورد', opening_balance: 'رصيد افتتاحي',
+  debit: 'مدين', credit: 'دائن', balance: 'الرصيد', receipt_voucher: 'سند قبض', payment_voucher: 'سند صرف',
   quotations_count: 'عروض الأسعار', sales_invoices_count: 'فواتير المبيعات', users_count: 'المستخدمون',
   account_number: 'رقم الحساب', account_name: 'اسم الحساب', account_type: 'نوع الحساب', entry_no: 'رقم القيد',
   app_name: 'اسم التطبيق',
@@ -299,10 +331,12 @@ const arSATranslations: TranslationKeys = {
   cancel: 'إلغاء',
   quotation_details: 'تفاصيل عرض السعر',
   invoice_details: 'تفاصيل الفاتورة',
+  purchase_invoice_details: 'تفاصيل فاتورة المشتريات',
   company_name: 'اسم الشركة',
   contact_person: 'المسئول',
   project_name: 'المشروع',
   quotation_type: 'نوع عرض السعر',
+  invoice_type: 'نوع الفاتورة',
   currency: 'العملة',
   currency_egp: 'جنيه مصري',
   back_to_list: 'العودة للقائمة',
@@ -347,16 +381,30 @@ const arSATranslations: TranslationKeys = {
   permission_scope_all: 'الكل',
   permission_scope_none: 'لا يوجد',
   other_permissions: 'صلاحيات أخرى',
+  category: 'التصنيف',
+  unit: 'الوحدة',
+  avg_purchase_price: 'متوسط سعر الشراء',
+  avg_selling_price: 'متوسط سعر البيع',
+  product_name: 'اسم المنتج',
+  select_product: 'اختر منتجاً',
+  select_customer: 'اختر شركة',
+  select_supplier: 'اختر مورداً',
+  apply_tax: 'تطبيق الضريبة',
+  discount: 'الخصم',
+  discount_type: 'نوع الخصم',
+  percentage: 'نسبة',
+  amount_value: 'قيمة',
+  subtotal_before_discount: 'المجموع قبل الخصم',
+  time: 'الوقت',
+  company: 'الشركة',
+  created_by: 'أنشئ بواسطة',
+  linked_document: 'المستند المرتبط',
 };
 
 const arEGTranslations: TranslationKeys = {
   ...arSATranslations,
-  customers: 'الزبائن',
   phone: 'التليفون',
   welcome_to_enjaz: 'أهلاً بك في إنجاز',
-  customer_count: 'عدد الزبائن',
-  customer: 'الزبون',
-  new_customer: 'إضافة زبون جديد',
 };
 
 const enUSTranslations: TranslationKeys = {
@@ -364,7 +412,7 @@ const enUSTranslations: TranslationKeys = {
   purchases: 'Purchases', purchase_invoices: 'Purchase Invoices', contacts: 'Contacts',
   customers: 'Customers', suppliers: 'Suppliers', settings: 'Settings', products_and_services: 'Products & Services',
   total: 'Total', status: 'Status', issue_date: 'Issue Date', due_date: 'Due Date', name: 'Name',
-  email: 'Email', phone: 'Phone', address: 'Address', description: 'Description', price: 'Price',
+  email: 'Email', phone: 'Phone', address: 'Address', description: 'Description', price: 'Selling Price',
   type: 'Type', welcome_to_enjaz: 'Welcome to Enjaz', total_sales: 'Total Sales',
   total_purchases: 'Total Purchases', customer_count: 'Customer Count', supplier_count: 'Supplier Count',
   sales_and_purchases_overview: 'Sales & Purchases Overview', quotation_no: 'Quotation #',
@@ -382,9 +430,11 @@ const enUSTranslations: TranslationKeys = {
   conversion_error: 'Failed to convert quotation', converting: 'Converting...',
   download_pdf: 'Download PDF', create: 'Create', delete: 'Delete', print: 'Print', convert: 'Convert', view_statement: 'Statement',
   module: 'Module', manager: 'Manager', share: 'Share',
-  add_item: 'Add Item', edit_quotation: 'Edit Quotation',
+  add_item: 'Add Item', edit_quotation: 'Edit Quotation', new_product: 'New Product', edit_product: 'Edit Product',
+  edit_invoice: 'Edit Invoice', edit_supplier_invoice: 'Edit Purchase Invoice',
   bill_to: 'Bill To:', quantity: 'Qty', thank_you_message: 'Thank you for your business!',
   unspecified_customer: 'Unspecified Customer', invoice: 'Invoice', quotation: 'Quotation', tax_number: 'Tax Number',
+  purchase_invoice: 'Purchase Invoice', supplier_information: 'Supplier Information',
   username_placeholder: 'Username', month_jan: 'Jan', month_feb: 'Feb', month_mar: 'Mar',
   month_apr: 'Apr', month_may: 'May', month_jun: 'Jun',
   accounting: 'Accounting', receipt_vouchers: 'Receipt Vouchers', payment_vouchers: 'Payment Vouchers',
@@ -392,8 +442,9 @@ const enUSTranslations: TranslationKeys = {
   amount: 'Amount', payment_method: 'Payment Method', cash: 'Cash', bank_transfer: 'Bank Transfer', cheque: 'Cheque',
   date: 'Date', new_receipt_voucher: 'New Receipt Voucher', new_payment_voucher: 'New Payment Voucher',
   new_account: 'New Account', new_journal_entry: 'New Journal Entry',
-  account_statement: 'Statement', statement_for_customer: 'Statement of Account for', opening_balance: 'Opening Balance',
-  debit: 'Debit', credit: 'Credit', balance: 'Balance', receipt_voucher: 'Receipt Voucher',
+  account_statement: 'Statement', statement_for_customer: 'Statement of Account for', statement_for_supplier: 'Statement of Account for Supplier',
+  supplier_statement: 'Supplier Statement', opening_balance: 'Opening Balance',
+  debit: 'Debit', credit: 'Credit', balance: 'Balance', receipt_voucher: 'Receipt Voucher', payment_voucher: 'Payment Voucher',
   quotations_count: 'Quotations', sales_invoices_count: 'Sales Invoices', users_count: 'Users',
   account_number: 'Account #', account_name: 'Account Name', account_type: 'Account Type', entry_no: 'Entry #',
   app_name: 'App Name',
@@ -419,10 +470,12 @@ const enUSTranslations: TranslationKeys = {
   cancel: 'Cancel',
   quotation_details: 'Quotation Details',
   invoice_details: 'Invoice Details',
+  purchase_invoice_details: 'Purchase Invoice Details',
   company_name: 'Company Name',
   contact_person: 'Contact Person',
   project_name: 'Project',
   quotation_type: 'Quotation Type',
+  invoice_type: 'Invoice Type',
   currency: 'Currency',
   currency_egp: 'Egyptian Pound',
   back_to_list: 'Back to List',
@@ -467,6 +520,24 @@ const enUSTranslations: TranslationKeys = {
   permission_scope_all: 'All',
   permission_scope_none: 'None',
   other_permissions: 'Other Permissions',
+  category: 'Category',
+  unit: 'Unit',
+  avg_purchase_price: 'Avg. Purchase Price',
+  avg_selling_price: 'Avg. Selling Price',
+  product_name: 'Product Name',
+  select_product: 'Select a product',
+  select_customer: 'Select a customer',
+  select_supplier: 'Select a supplier',
+  apply_tax: 'Apply Tax',
+  discount: 'Discount',
+  discount_type: 'Discount Type',
+  percentage: 'Percentage',
+  amount_value: 'Amount',
+  subtotal_before_discount: 'Subtotal Before Discount',
+  time: 'Time',
+  company: 'Company',
+  created_by: 'Created By',
+  linked_document: 'Linked Document',
 };
 
 const allTranslations: Record<LocaleKey, TranslationKeys> = {

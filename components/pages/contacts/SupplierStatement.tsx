@@ -3,28 +3,29 @@ import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
-import { AccountTransaction, Customer } from '../../../types';
+import { AccountTransaction, Supplier } from '../../../types';
 import Button from '../../ui/Button';
 import Table from '../../ui/Table';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AmiriFont } from '../../../assets/AmiriFont';
-import { mockCustomersData, mockCustomerTransactions } from '../../../services/mockData';
+import { mockSuppliersData, mockSupplierTransactions } from '../../../services/mockData';
 
-const CustomerStatement = () => {
+const SupplierStatement = () => {
   const { id } = useParams<{ id: string }>();
   const { config, companyInfo } = useAppSettings();
   const { t } = useTranslation();
   
-  const customerId = parseInt(id || '0');
-  const customer = useMemo(() => mockCustomersData.find(c => c.id === customerId), [customerId]);
+  const supplierId = parseInt(id || '0');
+  const supplier = useMemo(() => mockSuppliersData.find(s => s.id === supplierId), [supplierId]);
 
   const openingBalance = 0;
   
   const processedTransactions = useMemo(() => {
-    return mockCustomerTransactions.reduce<AccountTransaction[]>((accumulator, currentTransaction) => {
+    return mockSupplierTransactions.reduce<AccountTransaction[]>((accumulator, currentTransaction) => {
       const previousBalance = accumulator.length > 0 ? accumulator[accumulator.length - 1].balance : openingBalance;
-      const newBalance = previousBalance + currentTransaction.debit - currentTransaction.credit;
+      // For suppliers: balance increases with credit (invoices) and decreases with debit (payments)
+      const newBalance = previousBalance - currentTransaction.debit + currentTransaction.credit;
       
       accumulator.push({
         ...currentTransaction,
@@ -35,7 +36,6 @@ const CustomerStatement = () => {
     }, []);
   }, []);
 
-  
   const finalBalance = processedTransactions.length > 0 
     ? processedTransactions[processedTransactions.length - 1].balance 
     : openingBalance;
@@ -50,7 +50,7 @@ const CustomerStatement = () => {
   ];
   
   const generatePDF = () => {
-    if (!customer) return;
+    if (!supplier) return;
     const doc = new jsPDF();
     const isRTL = config.dir === 'rtl';
 
@@ -64,16 +64,13 @@ const CustomerStatement = () => {
     const align = isRTL ? 'right' : 'left';
     const xPos = isRTL ? 190 : 20;
 
-    // Header
     doc.setFontSize(18);
-    doc.text(processText(`${t('account_statement')} - ${isRTL ? companyInfo.NAME_AR.value : companyInfo.NAME.value}`), 105, 20, { align: 'center' });
+    doc.text(processText(`${t('supplier_statement')} - ${isRTL ? companyInfo.NAME_AR.value : companyInfo.NAME.value}`), 105, 20, { align: 'center' });
     
-    // Customer Info
     doc.setFontSize(12);
-    doc.text(processText(`${t('customer')}: ${customer.name}`), xPos, 40, { align });
+    doc.text(processText(`${t('supplier')}: ${supplier.name}`), xPos, 40, { align });
     doc.text(processText(`${t('date')}: ${new Date().toLocaleDateString()}`), xPos, 47, { align });
 
-    // Table
     const head = isRTL 
       ? [[processText(t('balance')), processText(t('credit')), processText(t('debit')), processText(t('description')), processText(t('time')), processText(t('date'))]]
       : [[t('date'), t('time'), t('description'), t('debit'), t('credit'), t('balance')]];
@@ -107,25 +104,24 @@ const CustomerStatement = () => {
     doc.setFontSize(12);
     doc.text(processText(`${t('total')}: ${finalBalance.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`), xPos, finalY + 15, { align });
 
-    doc.save(`statement-${customer.id}-${new Date().toISOString().split('T')[0]}.pdf`);
+    doc.save(`statement-${supplier.id}-${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  if (!customer) {
-    return (
-        <div className="text-center p-8">
-            <h1 className="text-2xl font-bold mb-4">Customer Not Found</h1>
-            <Button as={Link} to="/contacts/customers" variant="primary">{t('back_to_list')}</Button>
-        </div>
-    );
+  if (!supplier) {
+      return (
+          <div className="text-center p-8">
+              <h1 className="text-2xl font-bold mb-4">Supplier Not Found</h1>
+              <Button as={Link} to="/contacts/suppliers" variant="primary">{t('back_to_list')}</Button>
+          </div>
+      );
   }
-
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-            <h1 className="text-3xl font-bold">{t('account_statement')}</h1>
-            <p className="text-gray-500">{t('statement_for_customer')}: {customer.name}</p>
+            <h1 className="text-3xl font-bold">{t('supplier_statement')}</h1>
+            <p className="text-gray-500">{t('statement_for_supplier')}: {supplier.name}</p>
         </div>
         <Button variant="primary" onClick={generatePDF}>{t('download_pdf')}</Button>
       </div>
@@ -134,4 +130,4 @@ const CustomerStatement = () => {
   );
 };
 
-export default CustomerStatement;
+export default SupplierStatement;

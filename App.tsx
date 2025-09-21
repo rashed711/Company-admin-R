@@ -23,6 +23,10 @@ import RolesList from './components/pages/settings/RolesList';
 import QuotationDetail from './components/pages/sales/QuotationDetail';
 import InvoiceDetail from './components/pages/sales/InvoiceDetail';
 import QuotationEdit from './components/pages/sales/QuotationEdit';
+import SupplierInvoiceDetail from './components/pages/purchases/SupplierInvoiceDetail';
+import InvoiceEdit from './components/pages/sales/InvoiceEdit';
+import SupplierInvoiceEdit from './components/pages/purchases/SupplierInvoiceEdit';
+import SupplierStatement from './components/pages/contacts/SupplierStatement';
 
 // This component handles app-wide settings like language direction and contains the main routing logic.
 const AppRouter = () => {
@@ -36,7 +40,7 @@ const AppRouter = () => {
 
   return (
     <HashRouter>
-      <div className="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+      <div className="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 min-h-screen">
         {isAuthenticated ? (
           <MainLayout>
             <Routes>
@@ -45,12 +49,19 @@ const AppRouter = () => {
               <Route path="/quotations" element={<QuotationsList />} />
               <Route path="/quotations/:id" element={<QuotationDetail />} />
               <Route path="/quotations/:id/edit" element={<QuotationEdit />} />
+              <Route path="/quotations/new" element={<QuotationEdit />} />
               <Route path="/invoices/sales" element={<InvoicesList />} />
               <Route path="/invoices/sales/:id" element={<InvoiceDetail />} />
+              <Route path="/invoices/sales/:id/edit" element={<InvoiceEdit />} />
+              <Route path="/invoices/sales/new" element={<InvoiceEdit />} />
               <Route path="/invoices/purchases" element={<SupplierInvoicesList />} />
+              <Route path="/invoices/purchases/:id" element={<SupplierInvoiceDetail />} />
+              <Route path="/invoices/purchases/:id/edit" element={<SupplierInvoiceEdit />} />
+              <Route path="/invoices/purchases/new" element={<SupplierInvoiceEdit />} />
               <Route path="/contacts/customers" element={<CustomersList />} />
               <Route path="/contacts/customers/:id/statement" element={<CustomerStatement />} />
               <Route path="/contacts/suppliers" element={<SuppliersList />} />
+              <Route path="/contacts/suppliers/:id/statement" element={<SupplierStatement />} />
               <Route path="/accounting/chart-of-accounts" element={<ChartOfAccounts />} />
               <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
               <Route path="/accounting/receipt-vouchers" element={<ReceiptVouchersList />} />

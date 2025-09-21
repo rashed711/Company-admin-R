@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DocumentViewer from '../../shared/DocumentViewer';
@@ -9,20 +8,8 @@ import { useTranslation } from '../../../services/localization';
 import { Quotation, CompanyInfo } from '../../../types';
 import { supabase } from '../../../services/supabaseClient';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { AmiriFont } from '../../../assets/AmiriFont';
-
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
-
-const calculateTotals = (total: number, taxRate: number) => {
-    const subtotal = total / (1 + taxRate / 100);
-    const taxAmount = total - subtotal;
-    return { subtotal, taxAmount };
-}
 
 const QuotationDetail = () => {
     const { id } = useParams<{ id: string }>();
@@ -115,7 +102,8 @@ const QuotationDetail = () => {
         const col1X = isRTL ? 190 : 20;
         const col2X = isRTL ? 125 : 85;
         const col3X = isRTL ? 60 : 150;
-        doc.text(processText(`${t('company_name')}: ${quotation.company_name || ''}`), col1X, infoY, { align });
+        // FIX: The 'Quotation' type does not have a 'company_name' property. Use 'customer_name' instead.
+        doc.text(processText(`${t('company_name')}: ${quotation.customer_name || ''}`), col1X, infoY, { align });
         doc.text(processText(`${t('contact_person')}: ${quotation.contact_person || ''}`), col2X, infoY, { align });
         doc.text(processText(`${t('quotation_no')}: ${quotation.id}`), col3X, infoY, { align });
         infoY += 7;
@@ -124,39 +112,65 @@ const QuotationDetail = () => {
         doc.text(processText(`${t('issue_date')}: ${quotation.issue_date}`), col3X, infoY, { align });
 
         const head = isRTL 
-          ? [[processText(t('total')), processText(t('price')), processText(t('quantity')), processText(t('description'))]]
-          : [[t('description'), t('quantity'), t('price'), t('total')]];
+          ? [[processText(t('total')), processText(t('price')), processText(t('quantity')), processText(t('unit')), processText(t('description')), processText(t('product_name'))]]
+          : [[t('product_name'), t('description'), t('unit'), t('quantity'), t('price'), t('total')]];
         const body = quotation.items.map(item => isRTL 
           ? [
               `${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
               `${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
               item.quantity, 
-              processText(item.product_name || '...')
+              processText(item.unit || ''),
+              processText(item.description || ''),
+              processText(item.product_name || '...'),
             ]
           : [
               item.product_name || '...', 
+              item.description || '',
+              item.unit || '',
               item.quantity, 
               `${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
               `${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`
             ]
         );
-        doc.autoTable({ head, body, startY: infoY + 10, theme: 'striped', styles: { font: isRTL ? 'Amiri' : 'helvetica', halign: isRTL ? 'right' : 'left' }, headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }});
+        autoTable(doc, { head, body, startY: infoY + 10, theme: 'striped', styles: { font: isRTL ? 'Amiri' : 'helvetica', halign: isRTL ? 'right' : 'left' }, headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }});
 
         let finalY = (doc as any).lastAutoTable.finalY || 120;
+        finalY += 10;
+        
         const totalX = isRTL ? 190 : 20;
         const totalAlign = isRTL ? 'right' : 'left';
         doc.setFontSize(12);
-        doc.text(processText(`${t('subtotal')}: ${quotation.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 15, { align: totalAlign });
-        doc.text(processText(`${t('tax')} (${quotation.tax_rate}%): ${quotation.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 22, { align: totalAlign });
+        
+        const itemsSubtotal = quotation.items.reduce((sum, item) => sum + item.total, 0);
+        const discountValue = quotation.discount_type === 'percentage' 
+            ? itemsSubtotal * ((quotation.discount_amount || 0) / 100)
+            : (quotation.discount_amount || 0);
+
+        doc.text(processText(`${t('subtotal_before_discount')}: ${itemsSubtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY, { align: totalAlign });
+        finalY += 7;
+
+        if (discountValue > 0) {
+            doc.text(processText(`${t('discount')}: -${discountValue.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY, { align: totalAlign });
+            finalY += 7;
+        }
+
+        doc.text(processText(`${t('subtotal')}: ${quotation.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY, { align: totalAlign });
+        finalY += 7;
+
+        if (quotation.is_taxable) {
+            doc.text(processText(`${t('tax')} (${quotation.tax_rate}%): ${quotation.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY, { align: totalAlign });
+            finalY += 7;
+        }
+        
         doc.setFontSize(14);
-        doc.text(processText(`${t('total')}: ${quotation.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 30, { align: totalAlign });
-        finalY += 35;
+        doc.text(processText(`${t('total')}: ${quotation.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 2, { align: totalAlign });
+        finalY += 10;
         
         if (quotationTemplate.termsAndConditions) {
             doc.setFontSize(9);
-            doc.text(processText(t('terms_and_conditions')), totalX, finalY + 10, { align: totalAlign });
+            doc.text(processText(t('terms_and_conditions')), totalX, finalY + 5, { align: totalAlign });
             const termsLines = doc.splitTextToSize(processText(quotationTemplate.termsAndConditions), isRTL ? 100 : 170);
-            doc.text(termsLines, totalX, finalY + 16, { align: totalAlign });
+            doc.text(termsLines, totalX, finalY + 11, { align: totalAlign });
         }
         const footerText = quotationTemplate.footer || t('thank_you_message');
         doc.setFontSize(10);
@@ -170,18 +184,18 @@ const QuotationDetail = () => {
     };
 
     const handleShare = async () => {
-        if (!processedQuotation) return;
+        if (!quotationData) return;
         setLoading('share');
-        const pdfBlob = generateQuotationPDF(processedQuotation, 'blob');
+        const pdfBlob = generateQuotationPDF(quotationData, 'blob');
         if (!pdfBlob) { setLoading(null); return; }
 
-        const pdfFile = new File([pdfBlob], `quotation-${processedQuotation.id}.pdf`, { type: 'application/pdf' });
+        const pdfFile = new File([pdfBlob], `quotation-${quotationData.id}.pdf`, { type: 'application/pdf' });
         
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
             try {
                 await navigator.share({
                     files: [pdfFile],
-                    title: `${t('quotation_no')} ${processedQuotation.id}`,
+                    title: `${t('quotation_no')} ${quotationData.id}`,
                     text: `${t('quotation_details')} - ${companyInfo.NAME_AR.value}`,
                 });
             } catch (error) {
@@ -203,28 +217,20 @@ const QuotationDetail = () => {
         );
     }
     
-    const { subtotal, taxAmount } = calculateTotals(quotationData.total, taxRate);
-    const processedQuotation: Quotation = {
-        ...quotationData,
-        subtotal,
-        tax_rate: taxRate,
-        tax_amount: taxAmount
-    };
-
     return (
         <div>
             <div className="flex justify-between items-center mb-6 no-print">
                 <h1 className="text-3xl font-bold">{t('quotation_details')}</h1>
                 <div className="flex flex-wrap gap-2">
-                  <Button as={Link} to={`/quotations/${processedQuotation.id}/edit`} variant="outline">{t('edit')}</Button>
+                  <Button as={Link} to={`/quotations/${quotationData.id}/edit`} variant="outline">{t('edit')}</Button>
                   <Button 
                     variant="primary" 
-                    onClick={() => handleConvertToInvoice(processedQuotation.id)}
-                    disabled={loading === 'convert' || (processedQuotation.status !== 'accepted' && processedQuotation.status !== 'sent')}
+                    onClick={() => handleConvertToInvoice(quotationData.id)}
+                    disabled={loading === 'convert' || (quotationData.status !== 'accepted' && quotationData.status !== 'sent')}
                   >
                     {loading === 'convert' ? t('converting') : t('convert_to_invoice')}
                   </Button>
-                  <Button variant="secondary" onClick={() => generateQuotationPDF(processedQuotation)} disabled={!!loading}>
+                  <Button variant="secondary" onClick={() => generateQuotationPDF(quotationData)} disabled={!!loading}>
                       {t('download_pdf')}
                   </Button>
                   <Button variant="secondary" onClick={handleShare} disabled={!!loading}>
@@ -234,7 +240,7 @@ const QuotationDetail = () => {
                 </div>
             </div>
             <DocumentViewer 
-                document={processedQuotation}
+                document={quotationData}
                 type="quotation"
                 companyInfo={companyInfo}
                 template={quotationTemplate}

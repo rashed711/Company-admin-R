@@ -58,13 +58,13 @@ const RolesList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('role_management')}</h1>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('role_management')}</h1>
       </div>
       
       <div className="space-y-8">
         {Object.values(roles).map(role => (
-          <div key={role.id} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <div className="flex justify-between items-center border-b dark:border-gray-700 pb-3 mb-4">
+          <div key={role.id} className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
+            <div className="flex justify-between items-center border-b dark:border-gray-700 pb-4 mb-6">
               <h3 className="text-2xl font-bold text-sky-600 dark:text-sky-400">{role.name}</h3>
               {role.id !== 'admin' && <Button variant="primary" onClick={() => handleSaveChanges(role.id)}>{t('save_changes')}</Button>}
             </div>
@@ -72,10 +72,10 @@ const RolesList = () => {
             <div className="space-y-6">
               {Object.values(PERMISSION_STRUCTURE).map(group => (
                 <div key={group.id}>
-                  <h4 className="text-lg font-semibold mb-3">{t(group.title)}</h4>
+                  <h4 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">{t(group.title)}</h4>
                   
                   {'permissions' in group && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                       {Object.entries(group.permissions).map(([key, transKey]) => {
                         const permission = `${group.id}:${key}` as Permission;
                         return (
@@ -100,13 +100,13 @@ const RolesList = () => {
                   {'modules' in group && (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm text-start text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <thead className="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
                           <tr>
-                            <th className="px-4 py-2">{t('module')}</th>
-                            <th className="px-4 py-2 text-center">{t('permission_action_view')}</th>
-                            <th className="px-4 py-2 text-center">{t('permission_action_edit')}</th>
-                            <th className="px-4 py-2 text-center">{t('permission_action_delete')}</th>
-                            <th className="px-4 py-2 text-center">{t('other_permissions')}</th>
+                            <th className="px-4 py-2 font-semibold">{t('module')}</th>
+                            <th className="px-4 py-2 text-center font-semibold">{t('permission_action_view')}</th>
+                            <th className="px-4 py-2 text-center font-semibold">{t('permission_action_edit')}</th>
+                            <th className="px-4 py-2 text-center font-semibold">{t('permission_action_delete')}</th>
+                            <th className="px-4 py-2 text-center font-semibold">{t('other_permissions')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -115,11 +115,11 @@ const RolesList = () => {
                             const otherActions = modDef.actions.filter(a => !['view', 'edit', 'delete', 'view_team', 'view_all', 'edit_team', 'edit_all', 'delete_team', 'delete_all'].includes(a));
                             
                             return (
-                              <tr key={modKey} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                <td className="px-4 py-2 font-medium">{t(modDef.title)}</td>
+                              <tr key={modKey} className="bg-white border-b dark:bg-gray-900 dark:border-gray-800">
+                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{t(modDef.title)}</td>
                                 
                                 {(['view', 'edit', 'delete'] as Action[]).map(action => (
-                                  <td key={action} className="px-4 py-2 text-center">
+                                  <td key={action} className="px-4 py-3 text-center">
                                     {modDef.actions.includes(action) ? (
                                       <div className="flex justify-center items-center space-x-2 rtl:space-x-reverse text-xs">
                                         {(['own', 'team', 'all'] as Scope[]).map(scope => {
@@ -148,7 +148,7 @@ const RolesList = () => {
                                   </td>
                                 ))}
 
-                                <td className="px-4 py-2 text-center">
+                                <td className="px-4 py-3 text-center">
                                   <div className="flex justify-center items-center space-x-3 rtl:space-x-reverse flex-wrap">
                                   {otherActions.length > 0 ? otherActions.map(action => {
                                     const permission = `${group.id}:${modKey}:${action}` as Permission;

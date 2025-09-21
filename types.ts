@@ -80,7 +80,7 @@ export const PERMISSION_STRUCTURE = {
     title: 'permission_group_contacts',
     modules: {
       customers: { title: 'permission_module_customers', actions: ['view', 'view_team', 'view_all', 'create', 'edit', 'edit_team', 'edit_all', 'delete', 'delete_team', 'delete_all', 'view_statement'] },
-      suppliers: { title: 'permission_module_suppliers', actions: ['view', 'view_team', 'view_all', 'create', 'edit', 'edit_team', 'edit_all', 'delete', 'delete_team', 'delete_all'] }
+      suppliers: { title: 'permission_module_suppliers', actions: ['view', 'view_team', 'view_all', 'create', 'edit', 'edit_team', 'edit_all', 'delete', 'delete_team', 'delete_all', 'view_statement'] }
     }
   },
   accounting: {
@@ -184,8 +184,11 @@ export interface Product {
   id: number;
   name: string;
   description: string;
-  price: number;
-  type: 'product' | 'service';
+  category: string;
+  unit: string;
+  price: number; // Selling Price
+  avg_purchase_price: number;
+  avg_selling_price: number;
   created_at: string;
 }
 
@@ -193,21 +196,38 @@ export interface InvoiceItem {
   id: number;
   product_id: number;
   product_name?: string;
+  description: string;
+  unit: string;
   quantity: number;
   price: number;
   total: number;
 }
 
+export interface SupplierInvoiceItem {
+  id: number;
+  product_id: number;
+  product_name: string;
+  description: string;
+  unit: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+
 interface DocumentShared {
   id: number;
   issue_date: string;
-  items: InvoiceItem[];
   subtotal: number;
   tax_rate: number;
   tax_amount: number;
   total: number;
   created_at: string;
+  created_time: string;
   created_by?: number; // User ID
+  is_taxable: boolean;
+  discount_amount: number;
+  discount_type: 'percentage' | 'amount';
 }
 
 export interface Invoice extends DocumentShared {
@@ -216,16 +236,22 @@ export interface Invoice extends DocumentShared {
   due_date: string;
   status: 'draft' | 'sent' | 'paid' | 'overdue';
   paid_amount: number;
+  items: InvoiceItem[];
+  quotation_id?: number | null;
+  invoice_type?: string;
+  contact_person?: string;
+  project_name?: string;
 }
 
 export interface Quotation extends DocumentShared {
     customer_id: number;
     customer_name?: string;
     status: 'draft' | 'sent' | 'accepted' | 'rejected';
-    company_name?: string;
     contact_person?: string;
     project_name?: string;
     quotation_type?: string;
+    items: InvoiceItem[];
+    invoice_id?: number | null;
 }
 
 export interface SupplierInvoice extends DocumentShared {
@@ -234,6 +260,10 @@ export interface SupplierInvoice extends DocumentShared {
     due_date: string;
     status: 'unpaid' | 'paid' | 'partially_paid';
     paid_amount: number;
+    items: SupplierInvoiceItem[];
+    contact_person?: string;
+    project_name?: string;
+    supplier_invoice_type?: string;
 }
 
 // =================== Accounting Module ===================
@@ -246,6 +276,7 @@ export interface ReceiptVoucher {
     payment_method: 'cash' | 'bank_transfer' | 'cheque';
     description: string;
     created_at: string;
+    created_time: string;
     created_by?: number;
 }
 
@@ -258,13 +289,24 @@ export interface PaymentVoucher {
     payment_method: 'cash' | 'bank_transfer' | 'cheque';
     description: string;
     created_at: string;
+    created_time: string;
     created_by?: number;
+}
+
+export interface JournalEntry {
+    id: number;
+    date: string;
+    time: string;
+    description: string;
+    debit: number;
+    credit: number;
 }
 
 export interface AccountTransaction {
     id: string; // e.g., 'inv-101' or 'rv-1'
     date: string;
-    type: 'invoice' | 'receipt';
+    time: string;
+    type: 'invoice' | 'receipt' | 'payment';
     description: string;
     debit: number;
     credit: number;

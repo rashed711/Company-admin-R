@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Quotation } from '../../../types';
 import Table from '../../ui/Table';
@@ -15,6 +15,11 @@ const QuotationsList = () => {
   const navigate = useNavigate();
   const userMap = new Map(mockUsersData.map(user => [user.id, user.name]));
   
+  const sortedData = useMemo(() => 
+    [...mockQuotationsData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), 
+    []
+  );
+
   const handleRowClick = (quotation: Quotation) => {
     navigate(`/quotations/${quotation.id}`);
   };
@@ -37,7 +42,7 @@ const QuotationsList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('quotations')}</h1>
         <Button as={Link} to="/quotations/new" variant="primary">{t('new_quotation')}</Button>
       </div>
-      <Table columns={columns} data={mockQuotationsData} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} />
     </div>
   );
 };

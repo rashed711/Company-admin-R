@@ -1,20 +1,18 @@
 
 import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import { AccountTransaction, Supplier } from '../../../types';
 import Button from '../../ui/Button';
 import Table from '../../ui/Table';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { AmiriFont } from '../../../assets/AmiriFont';
 import { mockSuppliersData, mockSupplierTransactions } from '../../../services/mockData';
 
 const SupplierStatement = () => {
   const { id } = useParams<{ id: string }>();
-  const { config, companyInfo } = useAppSettings();
+  const { config } = useAppSettings();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   const supplierId = parseInt(id || '0');
   const supplier = useMemo(() => mockSuppliersData.find(s => s.id === supplierId), [supplierId]);
@@ -22,7 +20,10 @@ const SupplierStatement = () => {
   const openingBalance = 0;
   
   const processedTransactions = useMemo(() => {
-    return mockSupplierTransactions.reduce<AccountTransaction[]>((accumulator, currentTransaction) => {
+    // Sort chronologically first to calculate balance correctly
+    const sortedChronologically = [...mockSupplierTransactions].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    
+    const transactionsWithBalance = sortedChronologically.reduce<AccountTransaction[]>((accumulator, currentTransaction) => {
       const previousBalance = accumulator.length > 0 ? accumulator[accumulator.length - 1].balance : openingBalance;
       // For suppliers: balance increases with credit (invoices) and decreases with debit (payments)
       const newBalance = previousBalance - currentTransaction.debit + currentTransaction.credit;
@@ -34,78 +35,34 @@ const SupplierStatement = () => {
 
       return accumulator;
     }, []);
+    
+    // Reverse for display (most recent first)
+    return transactionsWithBalance.reverse();
   }, []);
 
-  const finalBalance = processedTransactions.length > 0 
-    ? processedTransactions[processedTransactions.length - 1].balance 
-    : openingBalance;
-
-  const columns: { header: string; accessor: keyof AccountTransaction; render?: (value: any) => React.ReactNode; }[] = [
-    { header: t('date'), accessor: 'date' },
+  const columns: { header: string; accessor: keyof AccountTransaction; render?: (value: any, row: AccountTransaction) => React.ReactNode; }[] = [
     { header: t('time'), accessor: 'time' },
+    { header: t('date'), accessor: 'date' },
     { header: t('description'), accessor: 'description' },
     { header: t('debit'), accessor: 'debit', render: (val: number) => val > 0 ? `${val.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}` : '-' },
     { header: t('credit'), accessor: 'credit', render: (val: number) => val > 0 ? `${val.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}` : '-' },
     { header: t('balance'), accessor: 'balance', render: (val: number) => `${val.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}` },
   ];
-  
-  const generatePDF = () => {
-    if (!supplier) return;
-    const doc = new jsPDF();
-    const isRTL = config.dir === 'rtl';
 
-    if (isRTL) {
-      doc.addFileToVFS('Amiri-Regular.ttf', AmiriFont);
-      doc.addFont('Amiri-Regular.ttf', 'Amiri', 'normal');
-      doc.setFont('Amiri');
+  const getEditPath = (tx: AccountTransaction) => {
+    switch (tx.source_type) {
+        case 'supplier-invoice': return `/invoices/purchases/${tx.source_id}/edit`;
+        case 'payment': return `/accounting/payment-vouchers/${tx.source_id}/edit`;
+        default: return '#';
     }
-
-    const processText = (text: string) => isRTL ? text.split('').reverse().join('') : text;
-    const align = isRTL ? 'right' : 'left';
-    const xPos = isRTL ? 190 : 20;
-
-    doc.setFontSize(18);
-    doc.text(processText(`${t('supplier_statement')} - ${isRTL ? companyInfo.NAME_AR.value : companyInfo.NAME.value}`), 105, 20, { align: 'center' });
-    
-    doc.setFontSize(12);
-    doc.text(processText(`${t('supplier')}: ${supplier.name}`), xPos, 40, { align });
-    doc.text(processText(`${t('date')}: ${new Date().toLocaleDateString()}`), xPos, 47, { align });
-
-    const head = isRTL 
-      ? [[processText(t('balance')), processText(t('credit')), processText(t('debit')), processText(t('description')), processText(t('time')), processText(t('date'))]]
-      : [[t('date'), t('time'), t('description'), t('debit'), t('credit'), t('balance')]];
-
-    const body = processedTransactions.map(tx => isRTL
-      ? [
-          `${tx.balance.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`,
-          tx.credit > 0 ? `${tx.credit.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`: '-',
-          tx.debit > 0 ? `${tx.debit.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`: '-',
-          processText(tx.description),
-          tx.time,
-          tx.date
-        ]
-      : [
-          tx.date,
-          tx.time,
-          tx.description,
-          tx.debit > 0 ? `${tx.debit.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`: '-',
-          tx.credit > 0 ? `${tx.credit.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`: '-',
-          `${tx.balance.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`,
-        ]
-    );
-
-    autoTable(doc, {
-        head, body, startY: 60, theme: 'striped',
-        styles: { font: isRTL ? 'Amiri' : 'helvetica', halign: isRTL ? 'right' : 'left' },
-        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }
-    });
-
-    const finalY = (doc as any).lastAutoTable.finalY || 120;
-    doc.setFontSize(12);
-    doc.text(processText(`${t('total')}: ${finalBalance.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`), xPos, finalY + 15, { align });
-
-    doc.save(`statement-${supplier.id}-${new Date().toISOString().split('T')[0]}.pdf`);
   };
+
+  const actions = (row: AccountTransaction) => (
+    <div className="flex space-x-2 rtl:space-x-reverse" onClick={(e) => e.stopPropagation()}>
+      <Button as={Link} to={getEditPath(row)} variant="outline" size="sm">{t('edit')}</Button>
+    </div>
+  );
+  
 
   if (!supplier) {
       return (
@@ -123,9 +80,9 @@ const SupplierStatement = () => {
             <h1 className="text-3xl font-bold">{t('supplier_statement')}</h1>
             <p className="text-gray-500">{t('statement_for_supplier')}: {supplier.name}</p>
         </div>
-        <Button variant="primary" onClick={generatePDF}>{t('download_pdf')}</Button>
+        <Button as={Link} to={`/contacts/suppliers/${supplierId}/statement/view`} variant="primary">{t('view')}</Button>
       </div>
-      <Table columns={columns} data={processedTransactions} />
+      <Table columns={columns} data={processedTransactions} onRowClick={(row) => navigate(getEditPath(row))} actions={actions} />
     </div>
   );
 };

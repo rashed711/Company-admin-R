@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Invoice, CompanyInfo } from '../../../types';
 import Table from '../../ui/Table';
@@ -16,6 +16,11 @@ const InvoicesList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const userMap = new Map(mockUsersData.map(user => [user.id, user.name]));
+
+  const sortedData = useMemo(() =>
+    [...mockInvoicesData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    []
+  );
 
   const handleRowClick = (invoice: Invoice) => {
     navigate(`/invoices/sales/${invoice.id}`);
@@ -173,7 +178,7 @@ const InvoicesList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('sales_invoices')}</h1>
         <Button as={Link} to="/invoices/sales/new" variant="primary">{t('new_invoice')}</Button>
       </div>
-      <Table columns={columns} data={mockInvoicesData} actions={actions} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} actions={actions} onRowClick={handleRowClick} />
     </div>
   );
 };

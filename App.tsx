@@ -27,6 +27,10 @@ import SupplierInvoiceDetail from './components/pages/purchases/SupplierInvoiceD
 import InvoiceEdit from './components/pages/sales/InvoiceEdit';
 import SupplierInvoiceEdit from './components/pages/purchases/SupplierInvoiceEdit';
 import SupplierStatement from './components/pages/contacts/SupplierStatement';
+import CustomerStatementDetail from './components/pages/contacts/CustomerStatementDetail';
+import SupplierStatementDetail from './components/pages/contacts/SupplierStatementDetail';
+import ReceiptVoucherEdit from './components/pages/accounting/ReceiptVoucherEdit';
+import PaymentVoucherEdit from './components/pages/accounting/PaymentVoucherEdit';
 
 // This component handles app-wide settings like language direction and contains the main routing logic.
 const AppRouter = () => {
@@ -60,12 +64,16 @@ const AppRouter = () => {
               <Route path="/invoices/purchases/new" element={<SupplierInvoiceEdit />} />
               <Route path="/contacts/customers" element={<CustomersList />} />
               <Route path="/contacts/customers/:id/statement" element={<CustomerStatement />} />
+              <Route path="/contacts/customers/:id/statement/view" element={<CustomerStatementDetail />} />
               <Route path="/contacts/suppliers" element={<SuppliersList />} />
               <Route path="/contacts/suppliers/:id/statement" element={<SupplierStatement />} />
+              <Route path="/contacts/suppliers/:id/statement/view" element={<SupplierStatementDetail />} />
               <Route path="/accounting/chart-of-accounts" element={<ChartOfAccounts />} />
               <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
               <Route path="/accounting/receipt-vouchers" element={<ReceiptVouchersList />} />
+              <Route path="/accounting/receipt-vouchers/:id/edit" element={<ReceiptVoucherEdit />} />
               <Route path="/accounting/payment-vouchers" element={<PaymentVouchersList />} />
+              <Route path="/accounting/payment-vouchers/:id/edit" element={<PaymentVoucherEdit />} />
               <Route path="/settings/products" element={<ProductsList />} />
               <Route path="/settings/app" element={<AppSettings />} />
               <Route path="/settings/users" element={<UsersList />} />

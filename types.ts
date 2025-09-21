@@ -300,15 +300,18 @@ export interface JournalEntry {
     description: string;
     debit: number;
     credit: number;
+    created_at: string;
 }
 
 export interface AccountTransaction {
     id: string; // e.g., 'inv-101' or 'rv-1'
     date: string;
     time: string;
-    type: 'invoice' | 'receipt' | 'payment';
+    source_type: 'invoice' | 'receipt' | 'payment' | 'supplier-invoice';
+    source_id: number;
     description: string;
     debit: number;
     credit: number;
     balance: number;
+    created_at: string;
 }

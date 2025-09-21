@@ -145,19 +145,20 @@ export const mockPaymentVouchersData: PaymentVoucher[] = [
 ];
 
 export const mockJournalEntriesData: JournalEntry[] = [
-    { id: 1, date: '2023-10-01', time: '09:00 ص', description: 'شراء مواد بناء', debit: 5000, credit: 5000 },
-    { id: 2, date: '2023-10-05', time: '04:30 م', description: 'دفع رواتب الموظفين', debit: 25000, credit: 25000 },
-    { id: 3, date: '2023-10-15', time: '12:00 م', description: 'تحصيل دفعة من العميل', debit: 10000, credit: 10000 },
+    { id: 1, date: '2023-10-01', time: '09:00 ص', description: 'شراء مواد بناء', debit: 5000, credit: 5000, created_at: '2023-10-01T09:00:00Z' },
+    { id: 2, date: '2023-10-05', time: '04:30 م', description: 'دفع رواتب الموظفين', debit: 25000, credit: 25000, created_at: '2023-10-05T16:30:00Z' },
+    { id: 3, date: '2023-10-15', time: '12:00 م', description: 'تحصيل دفعة من العميل', debit: 10000, credit: 10000, created_at: '2023-10-15T12:00:00Z' },
 ];
 
-export const mockCustomerTransactions: Omit<AccountTransaction, 'balance'>[] = [
-    { id: 'inv-101', date: '2023-10-15', time: '02:00 م', type: 'invoice', description: 'فاتورة رقم #101', debit: 17250, credit: 0 },
-    { id: 'rv-1', date: '2023-10-20', time: '02:30 م', type: 'receipt', description: 'سند قبض #1', debit: 0, credit: 10000 },
-    { id: 'inv-103', date: '2023-10-25', time: '10:00 ص', type: 'invoice', description: 'فاتورة رقم #103', debit: 5000, credit: 0 },
+export const mockCustomerTransactions: (Omit<AccountTransaction, 'balance'>)[] = [
+    { id: 'inv-101', date: '2023-10-15', time: '02:00 م', source_type: 'invoice', source_id: 101, description: 'فاتورة رقم #101', debit: 15525, credit: 0, created_at: '2023-10-15T14:00:00Z' },
+    { id: 'rv-1', date: '2023-10-20', time: '02:30 م', source_type: 'receipt', source_id: 1, description: 'سند قبض #1', debit: 0, credit: 10000, created_at: '2023-10-20T14:30:00Z' },
+    { id: 'inv-102', date: '2023-10-20', time: '04:45 م', source_type: 'invoice', source_id: 102, description: 'فاتورة رقم #102', debit: 8625, credit: 0, created_at: '2023-10-20T16:45:00Z' },
+    { id: 'rv-2', date: '2023-10-22', time: '11:00 ص', source_type: 'receipt', source_id: 2, description: 'سند قبض #2', debit: 0, credit: 8625, created_at: '2023-10-22T11:00:00Z' },
 ];
 
-export const mockSupplierTransactions: Omit<AccountTransaction, 'balance'>[] = [
-    { id: 'sinv-1', date: '2023-09-25', time: '09:15 ص', type: 'invoice', description: 'فاتورة مشتريات #1', debit: 0, credit: 33000 },
-    { id: 'pv-1', date: '2023-10-25', time: '03:00 م', type: 'payment', description: 'سند صرف #1', debit: 20000, credit: 0 },
-    { id: 'sinv-3', date: '2023-10-11', time: '11:00 ص', type: 'invoice', description: 'فاتورة مشتريات #3', debit: 0, credit: 49162.5 },
+export const mockSupplierTransactions: (Omit<AccountTransaction, 'balance'>)[] = [
+    { id: 'sinv-1', date: '2023-09-25', time: '09:15 ص', source_type: 'supplier-invoice', source_id: 1, description: 'فاتورة مشتريات #1', debit: 0, credit: 33000, created_at: '2023-09-25T09:15:00Z' },
+    { id: 'pv-1', date: '2023-10-25', time: '03:00 م', source_type: 'payment', source_id: 1, description: 'سند صرف #1', debit: 20000, credit: 0, created_at: '2023-10-25T15:00:00Z' },
+    { id: 'sinv-3', date: '2023-10-11', time: '11:00 ص', source_type: 'supplier-invoice', source_id: 3, description: 'فاتورة مشتريات #3', debit: 0, credit: 49162.5, created_at: '2023-10-11T11:00:00Z' },
 ];

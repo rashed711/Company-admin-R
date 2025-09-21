@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { PaymentVoucher } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
@@ -11,10 +11,15 @@ const PaymentVouchersList = () => {
   const { config } = useAppSettings();
   const { t } = useTranslation();
 
+  const sortedData = useMemo(() =>
+    [...mockPaymentVouchersData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    []
+  );
+
   const columns: { header: string; accessor: keyof PaymentVoucher; render?: (value: any) => React.ReactNode; }[] = [
     { header: 'ID', accessor: 'id' },
-    { header: t('date'), accessor: 'date' },
     { header: t('time'), accessor: 'created_time' },
+    { header: t('date'), accessor: 'date' },
     { header: t('supplier'), accessor: 'supplier_name' },
     { header: t('amount'), accessor: 'amount', render: (val: number) => `${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${config.currencySymbol}` },
     { header: t('payment_method'), accessor: 'payment_method', render: (val: string) => t(val as any) },
@@ -27,7 +32,7 @@ const PaymentVouchersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('payment_vouchers')}</h1>
         <Button variant="primary">{t('new_payment_voucher')}</Button>
       </div>
-      <Table columns={columns} data={mockPaymentVouchersData} />
+      <Table columns={columns} data={sortedData} />
     </div>
   );
 };

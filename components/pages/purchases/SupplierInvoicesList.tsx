@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { SupplierInvoice } from '../../../types';
 import Table from '../../ui/Table';
@@ -13,6 +13,11 @@ const SupplierInvoicesList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const userMap = new Map(mockUsersData.map(user => [user.id, user.name]));
+
+  const sortedData = useMemo(() =>
+    [...mockSupplierInvoicesData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    []
+  );
 
   const handleRowClick = (invoice: SupplierInvoice) => {
     navigate(`/invoices/purchases/${invoice.id}`);
@@ -42,7 +47,7 @@ const SupplierInvoicesList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('purchase_invoices')}</h1>
         <Button as={Link} to="/invoices/purchases/new" variant="primary">{t('new_supplier_invoice')}</Button>
       </div>
-      <Table columns={columns} data={mockSupplierInvoicesData} actions={actions} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} actions={actions} onRowClick={handleRowClick} />
     </div>
   );
 };

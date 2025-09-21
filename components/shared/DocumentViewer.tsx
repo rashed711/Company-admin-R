@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { Quotation, Invoice, CompanyInfo, DocumentTemplate, LocaleConfig, SupplierInvoice, InvoiceItem, SupplierInvoiceItem } from '../../../types';
-import { useTranslation } from '../../../services/localization';
+import { Quotation, Invoice, CompanyInfo, DocumentTemplate, LocaleConfig, SupplierInvoice, InvoiceItem, SupplierInvoiceItem } from '../../types';
+import { useTranslation } from '../../services/localization';
 
 type Document = Quotation | Invoice | SupplierInvoice;
 type DocumentType = 'quotation' | 'invoice' | 'supplier-invoice';

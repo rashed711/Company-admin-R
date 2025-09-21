@@ -23,7 +23,7 @@ const JournalEntriesList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('journal_entries')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('journal_entries')}</h1>
         <Button variant="primary">{t('new_journal_entry')}</Button>
       </div>
       <Table columns={columns} data={mockJournalEntriesData} />

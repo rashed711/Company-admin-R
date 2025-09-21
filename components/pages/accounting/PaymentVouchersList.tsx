@@ -24,7 +24,7 @@ const PaymentVouchersList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('payment_vouchers')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('payment_vouchers')}</h1>
         <Button variant="primary">{t('new_payment_voucher')}</Button>
       </div>
       <Table columns={columns} data={mockPaymentVouchersData} />

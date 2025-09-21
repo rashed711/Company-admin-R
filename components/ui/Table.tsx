@@ -18,9 +18,9 @@ const Table = <T extends { id: any }>(
   { columns, data, actions, onRowClick }: TableProps<T>
 ) => {
   return (
-    <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow-sm overflow-x-auto">
-      <table className="w-full text-sm text-start text-gray-600 dark:text-gray-400">
-        <thead className="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
+    <div className="bg-[rgb(var(--color-surface))] p-4 rounded-xl shadow-sm overflow-x-auto">
+      <table className="w-full text-sm text-start text-[rgb(var(--color-text-secondary))]">
+        <thead className="text-xs text-[rgb(var(--color-text-secondary))] bg-[rgb(var(--color-muted))]">
           <tr>
             {columns.map((col) => (
               <th key={col.accessor} scope="col" className="px-6 py-3 font-semibold">
@@ -34,7 +34,7 @@ const Table = <T extends { id: any }>(
           {data.map((row) => (
             <tr 
               key={row.id} 
-              className={`border-b dark:border-gray-800 odd:bg-white even:bg-gray-50 dark:odd:bg-gray-900 dark:even:bg-gray-800/50 hover:bg-sky-50 dark:hover:bg-gray-800 ${onRowClick ? 'cursor-pointer' : ''}`}
+              className={`border-b border-[rgb(var(--color-border))] odd:bg-[rgb(var(--color-surface))] even:bg-[rgb(var(--color-muted))] dark:odd:bg-transparent dark:even:bg-[rgba(var(--color-surface),0.5)] hover:bg-[rgba(var(--color-primary),0.05)] dark:hover:bg-[rgb(var(--color-surface))] ${onRowClick ? 'cursor-pointer' : ''}`}
               onClick={() => onRowClick && onRowClick(row)}
             >
               {columns.map((col) => (
@@ -52,7 +52,7 @@ const Table = <T extends { id: any }>(
         </tbody>
       </table>
       {data.length === 0 && (
-          <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-10 text-[rgb(var(--color-text-secondary))]">
               لا توجد بيانات لعرضها.
           </div>
       )}

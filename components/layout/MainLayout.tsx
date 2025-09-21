@@ -12,7 +12,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { config } = useAppSettings();
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-950" dir={config.dir}>
+    <div className="flex h-screen bg-[rgb(var(--color-background))]" dir={config.dir}>
       <div className="no-print">
         <Sidebar />
       </div>
@@ -20,7 +20,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="no-print">
           <Header />
         </div>
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-950 p-6 sm:p-8">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-[rgb(var(--color-background))] p-6 sm:p-8">
           {children}
         </main>
       </div>

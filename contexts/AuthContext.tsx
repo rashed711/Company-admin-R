@@ -21,6 +21,7 @@ export const ROLES: Record<'admin' | 'accountant' | 'sales_manager' | 'sales_per
             "contacts:customers:view_all",
             "contacts:customers:view_statement",
             "contacts:suppliers:view_all",
+            "contacts:suppliers:view_statement",
             "accounting:chart-of-accounts:view", "accounting:chart-of-accounts:create", "accounting:chart-of-accounts:edit",
             "accounting:journal-entries:view", "accounting:journal-entries:create", "accounting:journal-entries:edit",
             "accounting:receipt-vouchers:view", "accounting:receipt-vouchers:create",
@@ -33,7 +34,8 @@ export const ROLES: Record<'admin' | 'accountant' | 'sales_manager' | 'sales_per
         permissions: [
             "sales:quotations:create", "sales:quotations:view_team", "sales:quotations:edit_team", "sales:quotations:delete_team",
             "sales:invoices:create", "sales:invoices:view_team", "sales:invoices:edit_team",
-            "contacts:customers:create", "contacts:customers:view_team", "contacts:customers:edit_team",
+            "contacts:customers:create", "contacts:customers:view_team", "contacts:customers:edit_team", "contacts:customers:view_statement",
+            "contacts:suppliers:create", "contacts:suppliers:view_team", "contacts:suppliers:edit_team", "contacts:suppliers:view_statement",
         ],
     },
     sales_person: {
@@ -42,7 +44,8 @@ export const ROLES: Record<'admin' | 'accountant' | 'sales_manager' | 'sales_per
         permissions: [
             "sales:quotations:create", "sales:quotations:view", "sales:quotations:edit",
             "sales:invoices:create", "sales:invoices:view",
-            "contacts:customers:create", "contacts:customers:view",
+            "contacts:customers:create", "contacts:customers:view", "contacts:customers:view_statement",
+            "contacts:suppliers:create", "contacts:suppliers:view", "contacts:suppliers:view_statement",
         ],
     }
 };

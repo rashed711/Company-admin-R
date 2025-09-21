@@ -170,7 +170,7 @@ const InvoicesList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('sales_invoices')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('sales_invoices')}</h1>
         <Button as={Link} to="/invoices/sales/new" variant="primary">{t('new_invoice')}</Button>
       </div>
       <Table columns={columns} data={mockInvoicesData} actions={actions} onRowClick={handleRowClick} />

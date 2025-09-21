@@ -58,21 +58,21 @@ const RolesList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('role_management')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('role_management')}</h1>
       </div>
       
       <div className="space-y-8">
         {Object.values(roles).map(role => (
-          <div key={role.id} className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
-            <div className="flex justify-between items-center border-b dark:border-gray-700 pb-4 mb-6">
-              <h3 className="text-2xl font-bold text-sky-600 dark:text-sky-400">{role.name}</h3>
+          <div key={role.id} className="bg-[rgb(var(--color-surface))] p-6 rounded-xl shadow-sm">
+            <div className="flex justify-between items-center border-b border-[rgb(var(--color-border))] pb-4 mb-6">
+              <h3 className="text-2xl font-bold text-[rgb(var(--color-primary))]">{role.name}</h3>
               {role.id !== 'admin' && <Button variant="primary" onClick={() => handleSaveChanges(role.id)}>{t('save_changes')}</Button>}
             </div>
             
             <div className="space-y-6">
               {Object.values(PERMISSION_STRUCTURE).map(group => (
                 <div key={group.id}>
-                  <h4 className="text-lg font-semibold mb-3 text-gray-800 dark:text-gray-200">{t(group.title)}</h4>
+                  <h4 className="text-lg font-semibold mb-3 text-[rgb(var(--color-text-primary))]">{t(group.title)}</h4>
                   
                   {'permissions' in group && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">

@@ -25,7 +25,7 @@ const SuppliersList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('suppliers')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('suppliers')}</h1>
         <Button variant="primary">{t('new_supplier')}</Button>
       </div>
       <Table columns={columns} data={mockSuppliersData} onRowClick={handleRowClick} />

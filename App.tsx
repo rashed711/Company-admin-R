@@ -40,7 +40,7 @@ const AppRouter = () => {
 
   return (
     <HashRouter>
-      <div className="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-200 min-h-screen">
+      <div className="bg-[rgb(var(--color-background))] text-[rgb(var(--color-text-primary))] min-h-screen">
         {isAuthenticated ? (
           <MainLayout>
             <Routes>

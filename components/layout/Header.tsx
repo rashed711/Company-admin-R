@@ -33,12 +33,12 @@ const Header = () => {
   }
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 shadow-sm">
+    <header className="flex items-center justify-between p-4 bg-[rgb(var(--color-surface))] shadow-sm">
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">{getPageTitle(location.pathname)}</h2>
+        <h2 className="text-xl font-semibold text-[rgb(var(--color-text-primary))]">{getPageTitle(location.pathname)}</h2>
       </div>
       <div className="flex items-center space-x-4 rtl:space-x-reverse">
-        <div className="flex items-center bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
+        <div className="flex items-center bg-[rgb(var(--color-muted))] px-3 py-1.5 rounded-full">
             <UserIcon />
             <span className="hidden sm:inline mx-2 text-sm font-medium">{user?.name || t('username_placeholder')}</span>
         </div>

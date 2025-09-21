@@ -17,8 +17,8 @@ const Sidebar = () => {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  const linkClasses = "flex items-center p-2.5 text-base font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 group relative";
-  const activeLinkClasses = "bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-300";
+  const linkClasses = "flex items-center p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))] group relative";
+  const activeLinkClasses = "bg-[rgba(var(--color-primary),0.1)] text-[rgb(var(--color-primary))]";
 
   // Check if the user has permission to see any of the settings pages
   const canViewSettings = [
@@ -27,17 +27,17 @@ const Sidebar = () => {
   ].some(p => hasPermission(p as Permission));
 
   const SidebarContent = () => (
-    <div className="h-full px-3 py-4 overflow-y-auto bg-white dark:bg-gray-900 shadow-lg lg:shadow-none">
+    <div className="h-full px-3 py-4 overflow-y-auto bg-[rgb(var(--color-surface))] shadow-lg lg:shadow-none">
         <div className="flex items-center justify-between mb-6 px-2">
-            <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400">{companyInfo.APP_NAME.value}</h1>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+            <h1 className="text-2xl font-bold text-[rgb(var(--color-primary))]">{companyInfo.APP_NAME.value}</h1>
+            <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-md hover:bg-[rgb(var(--color-muted))]">
                 <XIcon />
             </button>
         </div>
       <ul className="space-y-2">
         <li>
           <NavLink to="/dashboard" onClick={() => setSidebarOpen(false)} className={({isActive}) => `${linkClasses} ${isActive ? activeLinkClasses : ''}`}>
-             <span className="absolute inset-y-0 start-0 w-1 bg-sky-600 rounded-e-full scale-y-0 group-[.active]:scale-y-100 transition-transform"></span>
+             <span className="absolute inset-y-0 start-0 w-1 bg-[rgb(var(--color-primary))] rounded-e-full scale-y-0 group-[.active]:scale-y-100 transition-transform"></span>
             <DashboardIcon />
             <span className="ms-3">{t('dashboard')}</span>
           </NavLink>
@@ -46,7 +46,7 @@ const Sidebar = () => {
         {hasPermission('sales:quotations:view') && (
           <li>
             <NavLink to="/quotations" onClick={() => setSidebarOpen(false)} className={({isActive}) => `${linkClasses} ${isActive ? activeLinkClasses : ''}`}>
-               <span className="absolute inset-y-0 start-0 w-1 bg-sky-600 rounded-e-full scale-y-0 group-[.active]:scale-y-100 transition-transform"></span>
+               <span className="absolute inset-y-0 start-0 w-1 bg-[rgb(var(--color-primary))] rounded-e-full scale-y-0 group-[.active]:scale-y-100 transition-transform"></span>
               <SalesIcon />
               <span className="ms-3">{t('quotations')}</span>
             </NavLink>
@@ -55,7 +55,7 @@ const Sidebar = () => {
 
         {hasPermission('sales:invoices:view') || hasPermission('purchases:invoices:view') ? (
             <li>
-            <button onClick={() => setInvoicesOpen(!isInvoicesOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button onClick={() => setInvoicesOpen(!isInvoicesOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))]">
                 <InvoiceIcon />
                 <span className="flex-1 ms-3 text-start whitespace-nowrap">{t('invoices_menu')}</span>
                 <ChevronDownIcon className={`transform transition-transform ${isInvoicesOpen ? 'rotate-180' : ''}`} />
@@ -70,7 +70,7 @@ const Sidebar = () => {
         ) : null}
 
         <li>
-          <button onClick={() => setAccountingOpen(!isAccountingOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+          <button onClick={() => setAccountingOpen(!isAccountingOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))]">
             <AccountingIcon />
             <span className="flex-1 ms-3 text-start whitespace-nowrap">{t('accounting')}</span>
             <ChevronDownIcon className={`transform transition-transform ${isAccountingOpen ? 'rotate-180' : ''}`} />
@@ -86,7 +86,7 @@ const Sidebar = () => {
         </li>
         
         <li>
-          <button onClick={() => setContactsOpen(!isContactsOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+          <button onClick={() => setContactsOpen(!isContactsOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))]">
             <ContactsIcon />
             <span className="flex-1 ms-3 text-start whitespace-nowrap">{t('contacts')}</span>
             <ChevronDownIcon className={`transform transition-transform ${isContactsOpen ? 'rotate-180' : ''}`} />
@@ -101,7 +101,7 @@ const Sidebar = () => {
 
         {canViewSettings && (
           <li>
-            <button onClick={() => setSettingsOpen(!isSettingsOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+            <button onClick={() => setSettingsOpen(!isSettingsOpen)} className="flex items-center w-full p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))]">
               <SettingsIcon />
               <span className="flex-1 ms-3 text-start whitespace-nowrap">{t('settings')}</span>
               <ChevronDownIcon className={`transform transition-transform ${isSettingsOpen ? 'rotate-180' : ''}`} />
@@ -122,7 +122,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <button onClick={() => setSidebarOpen(true)} className="lg:hidden fixed top-4 end-4 z-40 p-2 bg-white dark:bg-gray-800 rounded-md">
+      <button onClick={() => setSidebarOpen(true)} className="lg:hidden fixed top-4 end-4 z-40 p-2 bg-[rgb(var(--color-surface))] rounded-md">
         <MenuIcon />
       </button>
       

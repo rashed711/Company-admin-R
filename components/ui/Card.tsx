@@ -9,13 +9,13 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ title, value, icon }) => {
   return (
-    <div className="bg-white dark:bg-gray-900 p-5 rounded-xl shadow-sm flex items-center space-x-4 rtl:space-x-reverse">
-      <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400">
+    <div className="bg-[rgb(var(--color-surface))] p-5 rounded-xl shadow-sm flex items-center space-x-4 rtl:space-x-reverse">
+      <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-full bg-[rgba(var(--color-primary),0.1)] text-[rgb(var(--color-primary))]">
         {icon}
       </div>
       <div className="flex-grow">
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{title}</p>
-        <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{value}</p>
+        <p className="text-sm text-[rgb(var(--color-text-secondary))] font-medium">{title}</p>
+        <p className="text-2xl font-bold text-[rgb(var(--color-text-primary))]">{value}</p>
       </div>
     </div>
   );

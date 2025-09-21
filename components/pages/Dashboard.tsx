@@ -27,7 +27,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-gray-800 dark:text-gray-100 mb-8">{t('welcome_to_enjaz')}</h1>
+      <h1 className="text-3xl font-extrabold text-[rgb(var(--color-text-primary))] mb-8">{t('welcome_to_enjaz')}</h1>
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
@@ -40,8 +40,8 @@ const Dashboard = () => {
 
       {/* Sales Chart */}
       {showFinancials && (
-        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-sm">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-200">{t('sales_and_purchases_overview')}</h2>
+        <div className="bg-[rgb(var(--color-surface))] p-6 rounded-xl shadow-sm">
+          <h2 className="text-xl font-bold mb-4 text-[rgb(var(--color-text-primary))]">{t('sales_and_purchases_overview')}</h2>
           <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer>
               <BarChart
@@ -54,8 +54,8 @@ const Dashboard = () => {
                 <YAxis reversed={config.dir === 'rtl'} orientation={config.dir === 'rtl' ? 'right' : 'left'}/>
                 <Tooltip
                   contentStyle={{ 
-                      backgroundColor: 'rgba(31, 41, 55, 0.9)', 
-                      borderColor: '#4B5563',
+                      backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+                      borderColor: 'rgb(51, 65, 85)',
                       borderRadius: '0.75rem'
                   }}
                   cursor={{fill: 'rgba(128, 128, 128, 0.1)'}}

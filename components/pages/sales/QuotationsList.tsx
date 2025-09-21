@@ -34,7 +34,7 @@ const QuotationsList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('quotations')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('quotations')}</h1>
         <Button as={Link} to="/quotations/new" variant="primary">{t('new_quotation')}</Button>
       </div>
       <Table columns={columns} data={mockQuotationsData} onRowClick={handleRowClick} />

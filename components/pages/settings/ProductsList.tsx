@@ -79,7 +79,7 @@ const ProductsList = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{t('products_and_services')}</h1>
+        <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('products_and_services')}</h1>
         <Button variant="primary" onClick={handleAddNew}>{t('new_product_service')}</Button>
       </div>
       <Table columns={columns} data={products} onRowClick={handleEdit} />

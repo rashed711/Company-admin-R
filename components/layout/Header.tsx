@@ -1,0 +1,53 @@
+
+import React from 'react';
+import { UserIcon } from '../icons/Icons';
+import { useTranslation } from '../../services/localization';
+import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import Button from '../ui/Button';
+
+const Header = () => {
+  const { t } = useTranslation();
+  const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const getPageTitle = (pathname: string): string => {
+    // This is a simple mapping. A more robust solution might use a dedicated mapping object.
+    const pathSegments = pathname.split('/').filter(p => p);
+    const mainPath = pathSegments[0];
+    const subPath = pathSegments[1];
+
+    if (mainPath === 'settings') {
+        if (subPath === 'users') return t('user_management');
+        if (subPath === 'roles') return t('role_management');
+        return t('settings');
+    }
+
+    switch (mainPath) {
+        case 'dashboard': return t('dashboard');
+        case 'quotations': return t('quotations');
+        case 'invoices': return t('invoices_menu');
+        case 'contacts': return t('contacts');
+        default: return t('dashboard');
+    }
+  }
+
+  return (
+    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+      <div>
+        <h2 className="text-xl font-semibold">{getPageTitle(location.pathname)}</h2>
+      </div>
+      <div className="flex items-center space-x-4 rtl:space-x-reverse">
+        <div className="flex items-center">
+            <UserIcon />
+            <span className="hidden sm:inline mx-2">{user?.name || t('username_placeholder')}</span>
+        </div>
+        <Button variant="outline" size="sm" onClick={logout}>
+          {t('logout')}
+        </Button>
+      </div>
+    </header>
+  );
+};
+
+export default Header;

@@ -22,6 +22,7 @@ import UsersList from './components/pages/settings/UsersList';
 import RolesList from './components/pages/settings/RolesList';
 import QuotationDetail from './components/pages/sales/QuotationDetail';
 import InvoiceDetail from './components/pages/sales/InvoiceDetail';
+import QuotationEdit from './components/pages/sales/QuotationEdit';
 
 // This component handles app-wide settings like language direction and contains the main routing logic.
 const AppRouter = () => {
@@ -43,6 +44,7 @@ const AppRouter = () => {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/quotations" element={<QuotationsList />} />
               <Route path="/quotations/:id" element={<QuotationDetail />} />
+              <Route path="/quotations/:id/edit" element={<QuotationEdit />} />
               <Route path="/invoices/sales" element={<InvoicesList />} />
               <Route path="/invoices/sales/:id" element={<InvoiceDetail />} />
               <Route path="/invoices/purchases" element={<SupplierInvoicesList />} />

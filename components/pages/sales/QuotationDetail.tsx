@@ -108,26 +108,37 @@ const QuotationDetail = () => {
         
         doc.setFontSize(22);
         doc.text(processText(t('quotation')), xPosInv, 20, { align: align === 'right' ? 'left' : 'right'});
-        doc.setFontSize(12);
-        doc.text(processText(`${t('quotation_no')}: ${quotation.id}`), xPosInv, 35, { align: align === 'right' ? 'left' : 'right'});
-        doc.text(processText(`${t('issue_date')}: ${quotation.issue_date}`), xPosInv, 42, { align: align === 'right' ? 'left' : 'right'});
         
-        let infoY = Math.max(currentY, 42) + 15;
+        let infoY = currentY + 15;
         doc.setFontSize(10);
+        
         const col1X = isRTL ? 190 : 20;
-        const col2X = isRTL ? 115 : 95;
+        const col2X = isRTL ? 125 : 85;
+        const col3X = isRTL ? 60 : 150;
         doc.text(processText(`${t('company_name')}: ${quotation.company_name || ''}`), col1X, infoY, { align });
         doc.text(processText(`${t('contact_person')}: ${quotation.contact_person || ''}`), col2X, infoY, { align });
+        doc.text(processText(`${t('quotation_no')}: ${quotation.id}`), col3X, infoY, { align });
         infoY += 7;
         doc.text(processText(`${t('project_name')}: ${quotation.project_name || ''}`), col1X, infoY, { align });
         doc.text(processText(`${t('quotation_type')}: ${quotation.quotation_type || ''}`), col2X, infoY, { align });
+        doc.text(processText(`${t('issue_date')}: ${quotation.issue_date}`), col3X, infoY, { align });
 
         const head = isRTL 
           ? [[processText(t('total')), processText(t('price')), processText(t('quantity')), processText(t('description'))]]
           : [[t('description'), t('quantity'), t('price'), t('total')]];
         const body = quotation.items.map(item => isRTL 
-          ? [`${item.total.toLocaleString()} ${config.currencySymbol}`, `${item.price.toLocaleString()} ${config.currencySymbol}`, item.quantity, processText(item.product_name || '...')]
-          : [item.product_name || '...', item.quantity, `${item.price.toLocaleString()} ${config.currencySymbol}`, `${item.total.toLocaleString()} ${config.currencySymbol}`]
+          ? [
+              `${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
+              `${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
+              item.quantity, 
+              processText(item.product_name || '...')
+            ]
+          : [
+              item.product_name || '...', 
+              item.quantity, 
+              `${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}`, 
+              `${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`
+            ]
         );
         doc.autoTable({ head, body, startY: infoY + 10, theme: 'striped', styles: { font: isRTL ? 'Amiri' : 'helvetica', halign: isRTL ? 'right' : 'left' }, headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }});
 
@@ -135,10 +146,10 @@ const QuotationDetail = () => {
         const totalX = isRTL ? 190 : 20;
         const totalAlign = isRTL ? 'right' : 'left';
         doc.setFontSize(12);
-        doc.text(processText(`${t('subtotal')}: ${quotation.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`), totalX, finalY + 15, { align: totalAlign });
-        doc.text(processText(`${t('tax')} (${quotation.tax_rate}%): ${quotation.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`), totalX, finalY + 22, { align: totalAlign });
+        doc.text(processText(`${t('subtotal')}: ${quotation.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 15, { align: totalAlign });
+        doc.text(processText(`${t('tax')} (${quotation.tax_rate}%): ${quotation.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 22, { align: totalAlign });
         doc.setFontSize(14);
-        doc.text(processText(`${t('total')}: ${quotation.total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`), totalX, finalY + 30, { align: totalAlign });
+        doc.text(processText(`${t('total')}: ${quotation.total.toLocaleString(undefined, {minimumFractionDigits: 2})}`), totalX, finalY + 30, { align: totalAlign });
         finalY += 35;
         
         if (quotationTemplate.termsAndConditions) {
@@ -205,6 +216,7 @@ const QuotationDetail = () => {
             <div className="flex justify-between items-center mb-6 no-print">
                 <h1 className="text-3xl font-bold">{t('quotation_details')}</h1>
                 <div className="flex flex-wrap gap-2">
+                  <Button as={Link} to={`/quotations/${processedQuotation.id}/edit`} variant="outline">{t('edit')}</Button>
                   <Button 
                     variant="primary" 
                     onClick={() => handleConvertToInvoice(processedQuotation.id)}

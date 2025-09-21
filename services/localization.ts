@@ -120,6 +120,8 @@ type TranslationKeys = {
   back_to_list: string;
   print_document: string;
   share: string;
+  add_item: string;
+  edit_quotation: string;
 
   // Others
   product: string;
@@ -260,6 +262,7 @@ const arSATranslations: TranslationKeys = {
   conversion_error: 'فشل تحويل عرض السعر', converting: 'جاري التحويل...',
   download_pdf: 'تحميل PDF', create: 'إنشاء', delete: 'حذف', print: 'طباعة', convert: 'تحويل', view_statement: 'كشف حساب',
   module: 'الوحدة', manager: 'المدير المباشر', share: 'مشاركة',
+  add_item: 'إضافة بند', edit_quotation: 'تعديل عرض السعر',
   bill_to: 'فاتورة إلى:', quantity: 'الكمية', thank_you_message: 'شكراً لتعاملكم معنا!',
   unspecified_customer: 'عميل غير محدد', invoice: 'فاتورة', quotation: 'عرض سعر', tax_number: 'الرقم الضريبي',
   username_placeholder: 'اسم المستخدم', month_jan: 'يناير', month_feb: 'فبراير', month_mar: 'مارس',
@@ -379,6 +382,7 @@ const enUSTranslations: TranslationKeys = {
   conversion_error: 'Failed to convert quotation', converting: 'Converting...',
   download_pdf: 'Download PDF', create: 'Create', delete: 'Delete', print: 'Print', convert: 'Convert', view_statement: 'Statement',
   module: 'Module', manager: 'Manager', share: 'Share',
+  add_item: 'Add Item', edit_quotation: 'Edit Quotation',
   bill_to: 'Bill To:', quantity: 'Qty', thank_you_message: 'Thank you for your business!',
   unspecified_customer: 'Unspecified Customer', invoice: 'Invoice', quotation: 'Quotation', tax_number: 'Tax Number',
   username_placeholder: 'Username', month_jan: 'Jan', month_feb: 'Feb', month_mar: 'Mar',

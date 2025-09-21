@@ -21,6 +21,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
   const docTitle = type === 'quotation' ? t('quotation') : t('invoice');
   const docNumberLabel = type === 'quotation' ? t('quotation_no') : t('invoice_no');
   
+  const currency = type === 'quotation' ? '' : ` ${config.currencySymbol}`;
+  
   // Specific to invoice
   const dueDateLabel = t('due_date');
   const dueDateValue = (document as Invoice).due_date;
@@ -61,20 +63,26 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                 </div>
                 <div className={`text-${isRTL ? 'left' : 'right'}`}>
                     <h2 className="text-4xl font-bold uppercase">{docTitle}</h2>
-                    <p className="mt-2">{`${docNumberLabel}: ${document.id}`}</p>
-                    <p>{`${t('issue_date')}: ${document.issue_date}`}</p>
-                    {type === 'invoice' && <p>{`${dueDateLabel}: ${dueDateValue}`}</p>}
+                    {type === 'invoice' && (
+                        <>
+                            <p className="mt-2">{`${docNumberLabel}: ${document.id}`}</p>
+                            <p>{`${t('issue_date')}: ${document.issue_date}`}</p>
+                            <p>{`${dueDateLabel}: ${dueDateValue}`}</p>
+                        </>
+                    )}
                 </div>
             </header>
             
             {/* Details Section */}
             {type === 'quotation' ? (
                 <section className="mb-12 text-sm">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 p-4 border rounded-lg dark:border-gray-700">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-8 gap-y-2 p-4 border rounded-lg dark:border-gray-700">
                         <div><span className="font-semibold">{t('company_name')}:</span> {quotation.company_name || '-'}</div>
                         <div><span className="font-semibold">{t('contact_person')}:</span> {quotation.contact_person || '-'}</div>
+                        <div><span className="font-semibold">{docNumberLabel}:</span> {document.id}</div>
                         <div><span className="font-semibold">{t('project_name')}:</span> {quotation.project_name || '-'}</div>
                         <div><span className="font-semibold">{t('quotation_type')}:</span> {quotation.quotation_type || '-'}</div>
+                        <div><span className="font-semibold">{t('issue_date')}:</span> {document.issue_date}</div>
                     </div>
                 </section>
             ) : (
@@ -100,8 +108,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                             <tr key={item.id} className="border-b dark:border-gray-700">
                                 <td className="p-3">{item.product_name}</td>
                                 <td className="p-3 text-center">{item.quantity}</td>
-                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</td>
-                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</td>
+                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
+                                <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${item.total.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -112,9 +120,9 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
             <section className="flex justify-end mt-8">
                 <div className="w-full sm:w-1/2 md:w-1/3">
                     <div className="space-y-2">
-                        <div className="flex justify-between"><span>{t('subtotal')}</span><span>{`${document.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</span></div>
-                        <div className="flex justify-between"><span>{`${t('tax')} (${document.tax_rate}%)`}</span><span>{`${document.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</span></div>
-                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${document.total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</span></div>
+                        <div className="flex justify-between"><span>{t('subtotal')}</span><span>{`${document.subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        <div className="flex justify-between"><span>{`${t('tax')} (${document.tax_rate}%)`}</span><span>{`${document.tax_amount.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${document.total.toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                     </div>
                 </div>
             </section>

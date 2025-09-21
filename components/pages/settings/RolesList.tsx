@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { useTranslation } from '../../../services/localization';
 import { ROLES } from '../../../contexts/AuthContext';
 import { PERMISSION_STRUCTURE, Permission, Role } from '../../../types';
 import Button from '../../ui/Button';
+import Modal from '../../ui/Modal';
 
 type Scope = 'own' | 'team' | 'all';
 type Action = 'view' | 'edit' | 'delete';
@@ -11,6 +11,14 @@ type Action = 'view' | 'edit' | 'delete';
 const RolesList = () => {
   const { t } = useTranslation();
   const [roles, setRoles] = useState<Record<string, Role>>(ROLES);
+  
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    mode: 'new' | 'edit';
+    roleId?: string;
+    name: string;
+  }>({ isOpen: false, mode: 'new', roleId: undefined, name: '' });
+
 
   const handleScopeChange = (roleId: string, group: string, module: string, action: Action, scope: Scope | null) => {
     setRoles(prevRoles => {
@@ -54,18 +62,71 @@ const RolesList = () => {
     // In a real app, you would make an API call here to save the changes.
     alert(`Changes for role '${roles[roleId].name}' saved!`);
   };
+  
+  // Modal Handlers
+  const handleOpenNewModal = () => {
+    setModalState({ isOpen: true, mode: 'new', name: '' });
+  };
+  
+  const handleOpenEditModal = (role: Role) => {
+    setModalState({ isOpen: true, mode: 'edit', roleId: role.id, name: role.name });
+  };
+  
+  const handleCloseModal = () => {
+    setModalState({ isOpen: false, mode: 'new', roleId: undefined, name: '' });
+  };
+  
+  const handleSaveRole = () => {
+    if (modalState.name.trim() === '') return;
+  
+    if (modalState.mode === 'new') {
+      const newRoleId = `custom_${modalState.name.trim().toLowerCase().replace(/\s+/g, '_')}_${Date.now()}`;
+      const newRole: Role = {
+        id: newRoleId,
+        name: modalState.name.trim(),
+        permissions: [],
+      };
+      setRoles(prev => ({ ...prev, [newRoleId]: newRole }));
+    } else if (modalState.mode === 'edit' && modalState.roleId) {
+      setRoles(prev => ({
+        ...prev,
+        [modalState.roleId!]: { ...prev[modalState.roleId!], name: modalState.name.trim() }
+      }));
+    }
+    handleCloseModal();
+  };
+  
+  const handleDeleteRole = (roleId: string) => {
+    if (window.confirm(t('delete_role_confirm'))) {
+      setRoles(prev => {
+        const newRoles = { ...prev };
+        delete newRoles[roleId];
+        return newRoles;
+      });
+    }
+  };
+
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('role_management')}</h1>
+        <Button variant="primary" onClick={handleOpenNewModal}>{t('new_role')}</Button>
       </div>
       
       <div className="space-y-8">
         {Object.values(roles).map(role => (
           <div key={role.id} className="bg-[rgb(var(--color-surface))] p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center border-b border-[rgb(var(--color-border))] pb-4 mb-6">
-              <h3 className="text-2xl font-bold text-[rgb(var(--color-primary))]">{role.name}</h3>
+              <div className="flex items-center gap-4">
+                  <h3 className="text-2xl font-bold text-[rgb(var(--color-primary))]">{role.name}</h3>
+                  {!['admin', 'accountant', 'sales_manager', 'sales_person'].includes(role.id) && (
+                      <div className="flex gap-2">
+                          <Button variant="outline" size="sm" onClick={() => handleOpenEditModal(role)}>{t('edit')}</Button>
+                          <Button variant="danger" size="sm" onClick={() => handleDeleteRole(role.id)}>{t('delete')}</Button>
+                      </div>
+                  )}
+              </div>
               {role.id !== 'admin' && <Button variant="primary" onClick={() => handleSaveChanges(role.id)}>{t('save_changes')}</Button>}
             </div>
             
@@ -182,6 +243,29 @@ const RolesList = () => {
           </div>
         ))}
       </div>
+
+      <Modal isOpen={modalState.isOpen} onClose={handleCloseModal} title={modalState.mode === 'new' ? t('new_role') : t('edit_role')}>
+        <div className="space-y-4">
+            <div>
+                <label htmlFor="roleName" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    {t('name')}
+                </label>
+                <input
+                    id="roleName"
+                    type="text"
+                    value={modalState.name}
+                    onChange={(e) => setModalState(prev => ({ ...prev, name: e.target.value }))}
+                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                />
+            </div>
+            <div className="mt-6 flex justify-end space-x-2 rtl:space-x-reverse">
+                <Button variant="outline" onClick={handleCloseModal}>{t('cancel')}</Button>
+                <Button variant="primary" onClick={handleSaveRole}>
+                  {modalState.mode === 'new' ? t('create') : t('save_changes')}
+                </Button>
+            </div>
+        </div>
+      </Modal>
     </div>
   );
 };

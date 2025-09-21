@@ -27,6 +27,7 @@ type TranslationKeys = {
   user_management: string;
   role_management: string;
   logout: string;
+  profile: string;
 
   // General
   total: string;
@@ -67,7 +68,7 @@ type TranslationKeys = {
   linked_document: string;
 
   // Page specific
-  welcome_to_enjaz: string;
+  welcome_message: string;
   total_sales: string;
   total_purchases: string;
   customer_count: string;
@@ -145,6 +146,9 @@ type TranslationKeys = {
   edit_product: string;
   edit_invoice: string;
   edit_supplier_invoice: string;
+  new_role: string;
+  edit_role: string;
+  delete_role_confirm: string;
 
   // Others
   product: string;
@@ -160,6 +164,8 @@ type TranslationKeys = {
   select_product: string;
   select_customer: string;
   select_supplier: string;
+  search: string;
+  no_results_found: string;
 
   // Statuses
   draft: string;
@@ -214,6 +220,7 @@ type TranslationKeys = {
   upload_image: string;
   remove_image: string;
   no_image: string;
+  show_document_title: string;
   show_in_header: string;
 
   // Account Types
@@ -274,7 +281,7 @@ const arSATranslations: TranslationKeys = {
   customers: 'العملاء', suppliers: 'الموردين', settings: 'الإعدادات', products_and_services: 'المنتجات والخدمات',
   total: 'الإجمالي', status: 'الحالة', issue_date: 'تاريخ الإصدار', due_date: 'تاريخ الاستحقاق', name: 'الاسم',
   email: 'البريد الإلكتروني', phone: 'الهاتف', address: 'العنوان', description: 'الوصف', price: 'سعر البيع',
-  type: 'النوع', welcome_to_enjaz: 'مرحباً بك في إنجاز', total_sales: 'إجمالي المبيعات',
+  type: 'النوع', welcome_message: 'أهلاً بك في {appName}', total_sales: 'إجمالي المبيعات',
   total_purchases: 'إجمالي المشتريات', customer_count: 'عدد العملاء', supplier_count: 'عدد الموردين',
   sales_and_purchases_overview: 'نظرة عامة على المبيعات والمشتريات', quotation_no: 'رقم العرض',
   customer: 'الشركة', expiry_date: 'تاريخ الانتهاء', invoice_no: 'رقم الفاتورة', supplier: 'المورد',
@@ -322,6 +329,7 @@ const arSATranslations: TranslationKeys = {
   upload_image: 'رفع صورة',
   remove_image: 'إزالة الصورة',
   no_image: 'لا توجد صورة',
+  show_document_title: 'إظهار عنوان المستند',
   show_in_header: 'إظهار في الترويسة',
   asset: 'أصل', liability: 'التزام', equity: 'حقوق ملكية', revenue: 'إيراد', expense: 'مصروف',
   user_management: 'إدارة المستخدمين', role_management: 'إدارة الأدوار', logout: 'تسجيل الخروج',
@@ -341,6 +349,7 @@ const arSATranslations: TranslationKeys = {
   currency_egp: 'جنيه مصري',
   back_to_list: 'العودة للقائمة',
   print_document: 'طباعة',
+  profile: 'الملف الشخصي',
   permission_group_dashboard: 'مجموعة لوحة التحكم',
   permission_dashboard_financials_view: 'عرض الملخصات المالية',
   permission_dashboard_users_summary_view: 'عرض ملخص المستخدمين',
@@ -389,6 +398,8 @@ const arSATranslations: TranslationKeys = {
   select_product: 'اختر منتجاً',
   select_customer: 'اختر شركة',
   select_supplier: 'اختر مورداً',
+  search: 'ابحث',
+  no_results_found: 'لم يتم العثور على نتائج',
   apply_tax: 'تطبيق الضريبة',
   discount: 'الخصم',
   discount_type: 'نوع الخصم',
@@ -399,12 +410,14 @@ const arSATranslations: TranslationKeys = {
   company: 'الشركة',
   created_by: 'أنشئ بواسطة',
   linked_document: 'المستند المرتبط',
+  new_role: 'دور جديد',
+  edit_role: 'تعديل الدور',
+  delete_role_confirm: 'هل أنت متأكد من حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء.',
 };
 
 const arEGTranslations: TranslationKeys = {
   ...arSATranslations,
   phone: 'التليفون',
-  welcome_to_enjaz: 'أهلاً بك في إنجاز',
 };
 
 const enUSTranslations: TranslationKeys = {
@@ -413,7 +426,7 @@ const enUSTranslations: TranslationKeys = {
   customers: 'Customers', suppliers: 'Suppliers', settings: 'Settings', products_and_services: 'Products & Services',
   total: 'Total', status: 'Status', issue_date: 'Issue Date', due_date: 'Due Date', name: 'Name',
   email: 'Email', phone: 'Phone', address: 'Address', description: 'Description', price: 'Selling Price',
-  type: 'Type', welcome_to_enjaz: 'Welcome to Enjaz', total_sales: 'Total Sales',
+  type: 'Type', welcome_message: 'Welcome to {appName}', total_sales: 'Total Sales',
   total_purchases: 'Total Purchases', customer_count: 'Customer Count', supplier_count: 'Supplier Count',
   sales_and_purchases_overview: 'Sales & Purchases Overview', quotation_no: 'Quotation #',
   customer: 'Customer', expiry_date: 'Expiry Date', invoice_no: 'Invoice #', supplier: 'Supplier',
@@ -461,6 +474,7 @@ const enUSTranslations: TranslationKeys = {
   upload_image: 'Upload Image',
   remove_image: 'Remove Image',
   no_image: 'No Image',
+  show_document_title: 'Show Document Title',
   show_in_header: 'Show in Header',
   asset: 'Asset', liability: 'Liability', equity: 'Equity', revenue: 'Revenue', expense: 'Expense',
   user_management: 'User Management', role_management: 'Role Management', logout: 'Logout',
@@ -480,6 +494,7 @@ const enUSTranslations: TranslationKeys = {
   currency_egp: 'Egyptian Pound',
   back_to_list: 'Back to List',
   print_document: 'Print',
+  profile: 'Profile',
   permission_group_dashboard: 'Dashboard Module',
   permission_dashboard_financials_view: 'View Financials Summary',
   permission_dashboard_users_summary_view: 'View Users Summary',
@@ -528,6 +543,8 @@ const enUSTranslations: TranslationKeys = {
   select_product: 'Select a product',
   select_customer: 'Select a customer',
   select_supplier: 'Select a supplier',
+  search: 'Search',
+  no_results_found: 'No results found',
   apply_tax: 'Apply Tax',
   discount: 'Discount',
   discount_type: 'Discount Type',
@@ -538,6 +555,9 @@ const enUSTranslations: TranslationKeys = {
   company: 'Company',
   created_by: 'Created By',
   linked_document: 'Linked Document',
+  new_role: 'New Role',
+  edit_role: 'Edit Role',
+  delete_role_confirm: 'Are you sure you want to delete this role? This action cannot be undone.',
 };
 
 const allTranslations: Record<LocaleKey, TranslationKeys> = {

@@ -114,11 +114,13 @@ const AppSettings = () => {
   };
 
   const handleTemplateChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>, 
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
     setter: React.Dispatch<React.SetStateAction<DocumentTemplate>>
   ) => {
-    const { name, value } = e.target;
-    setter(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const isCheckbox = type === 'checkbox';
+    
+    setter(prev => ({ ...prev, [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value }));
   };
 
   const handleImageUpload = (
@@ -197,6 +199,19 @@ const AppSettings = () => {
             onImageUpload={(file) => handleImageUpload(file, setQuotationTemplate)}
             onImageRemove={() => handleImageRemove(setQuotationTemplate)}
           />
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="showTitleQuotation"
+              name="showTitleInHeader"
+              checked={quotationTemplate.showTitleInHeader}
+              onChange={(e) => handleTemplateChange(e, setQuotationTemplate)}
+              className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="showTitleQuotation" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              {t('show_document_title')}
+            </label>
+          </div>
           <TextareaField label={t('header')} name="header" value={quotationTemplate.header} onChange={(e) => handleTemplateChange(e, setQuotationTemplate)} />
           <TextareaField label={t('footer')} name="footer" value={quotationTemplate.footer} onChange={(e) => handleTemplateChange(e, setQuotationTemplate)} />
           <TextareaField label={t('terms_and_conditions')} name="termsAndConditions" value={quotationTemplate.termsAndConditions} onChange={(e) => handleTemplateChange(e, setQuotationTemplate)} />
@@ -209,6 +224,19 @@ const AppSettings = () => {
             onImageUpload={(file) => handleImageUpload(file, setSalesInvoiceTemplate)}
             onImageRemove={() => handleImageRemove(setSalesInvoiceTemplate)}
           />
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="showTitleSalesInvoice"
+              name="showTitleInHeader"
+              checked={salesInvoiceTemplate.showTitleInHeader}
+              onChange={(e) => handleTemplateChange(e, setSalesInvoiceTemplate)}
+              className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="showTitleSalesInvoice" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              {t('show_document_title')}
+            </label>
+          </div>
           <TextareaField label={t('header')} name="header" value={salesInvoiceTemplate.header} onChange={(e) => handleTemplateChange(e, setSalesInvoiceTemplate)} />
           <TextareaField label={t('footer')} name="footer" value={salesInvoiceTemplate.footer} onChange={(e) => handleTemplateChange(e, setSalesInvoiceTemplate)} />
           <TextareaField label={t('terms_and_conditions')} name="termsAndConditions" value={salesInvoiceTemplate.termsAndConditions} onChange={(e) => handleTemplateChange(e, setSalesInvoiceTemplate)} />
@@ -221,6 +249,19 @@ const AppSettings = () => {
             onImageUpload={(file) => handleImageUpload(file, setPurchaseInvoiceTemplate)}
             onImageRemove={() => handleImageRemove(setPurchaseInvoiceTemplate)}
           />
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="showTitlePurchaseInvoice"
+              name="showTitleInHeader"
+              checked={purchaseInvoiceTemplate.showTitleInHeader}
+              onChange={(e) => handleTemplateChange(e, setPurchaseInvoiceTemplate)}
+              className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label htmlFor="showTitlePurchaseInvoice" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+              {t('show_document_title')}
+            </label>
+          </div>
           <TextareaField label={t('header')} name="header" value={purchaseInvoiceTemplate.header} onChange={(e) => handleTemplateChange(e, setPurchaseInvoiceTemplate)} />
           <TextareaField label={t('footer')} name="footer" value={purchaseInvoiceTemplate.footer} onChange={(e) => handleTemplateChange(e, setPurchaseInvoiceTemplate)} />
           <TextareaField label={t('terms_and_conditions')} name="termsAndConditions" value={purchaseInvoiceTemplate.termsAndConditions} onChange={(e) => handleTemplateChange(e, setPurchaseInvoiceTemplate)} />

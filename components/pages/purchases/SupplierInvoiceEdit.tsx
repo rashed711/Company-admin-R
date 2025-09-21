@@ -1,21 +1,36 @@
-
 import React, { useState, useEffect, useMemo, ChangeEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { SupplierInvoice, SupplierInvoiceItem } from '../../../types';
+import { SupplierInvoice, SupplierInvoiceItem, LocaleKey } from '../../../types';
 import { mockSupplierInvoicesData, mockProductsData, mockSuppliersData } from '../../../services/mockData';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import { useTranslation } from '../../../services/localization';
 import Button from '../../ui/Button';
 import { XIcon } from '../../icons/Icons';
+import SearchableSelect from '../../ui/SearchableSelect';
+import { LOCALES_CONFIG } from '../../../config';
 
 const SupplierInvoiceEdit = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const { config, taxRate } = useAppSettings();
+    const { taxRate: globalTaxRate, localeKey: globalLocaleKey } = useAppSettings();
     const isNew = id === 'new' || id === undefined;
 
     const [invoice, setInvoice] = useState<SupplierInvoice | null>(null);
+    const [selectedLocaleKey, setSelectedLocaleKey] = useState<LocaleKey>(globalLocaleKey);
+
+     const sortedSuppliers = useMemo(() => 
+        [...mockSuppliersData].sort((a, b) => a.name.localeCompare(b.name)), 
+        []
+    );
+
+    const sortedProducts = useMemo(() =>
+        [...mockProductsData].sort((a, b) => a.name.localeCompare(b.name)),
+        []
+    );
+
+    const supplierOptions = useMemo(() => sortedSuppliers.map(s => ({ value: s.id.toString(), label: s.name })), [sortedSuppliers]);
+    const productOptions = useMemo(() => sortedProducts.map(p => ({ value: p.id.toString(), label: p.name })), [sortedProducts]);
 
     useEffect(() => {
         if (isNew) {
@@ -28,7 +43,7 @@ const SupplierInvoiceEdit = () => {
                 items: [],
                 paid_amount: 0,
                 subtotal: 0,
-                tax_rate: taxRate,
+                tax_rate: globalTaxRate,
                 tax_amount: 0,
                 total: 0,
                 created_at: new Date().toISOString(),
@@ -40,17 +55,22 @@ const SupplierInvoiceEdit = () => {
                 project_name: '',
                 supplier_invoice_type: '',
             });
+            setSelectedLocaleKey(globalLocaleKey);
         } else {
             const invoiceId = parseInt(id || '0');
             const originalData = mockSupplierInvoicesData.find(q => q.id === invoiceId);
             
             if (originalData) {
                 setInvoice(originalData);
+                const matchingLocale = Object.keys(LOCALES_CONFIG).find(key => 
+                    LOCALES_CONFIG[key as LocaleKey].taxRate === originalData.tax_rate
+                ) as LocaleKey | undefined;
+                setSelectedLocaleKey(matchingLocale || globalLocaleKey);
             } else {
                 navigate('/invoices/purchases');
             }
         }
-    }, [id, isNew, taxRate, navigate]);
+    }, [id, isNew, globalTaxRate, globalLocaleKey, navigate]);
 
     const { itemsSubtotal, discountValue, subtotal, taxAmount, total } = useMemo(() => {
         if (!invoice) return { itemsSubtotal: 0, discountValue: 0, subtotal: 0, taxAmount: 0, total: 0 };
@@ -64,7 +84,7 @@ const SupplierInvoiceEdit = () => {
         const currentSubtotal = currentItemsSubtotal - currentDiscountValue;
 
         const currentTaxAmount = invoice.is_taxable 
-            ? currentSubtotal * (taxRate / 100) 
+            ? currentSubtotal * (invoice.tax_rate / 100) 
             : 0;
 
         const currentTotal = currentSubtotal + currentTaxAmount;
@@ -76,19 +96,34 @@ const SupplierInvoiceEdit = () => {
             taxAmount: currentTaxAmount, 
             total: currentTotal 
         };
-    }, [invoice, taxRate]);
+    }, [invoice]);
 
     const handleMainDocChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         if (invoice) {
-            let val: string | number = value;
+            let val: string | number | boolean = value;
             if (type === 'number') {
                 val = parseFloat(value) || 0;
+            }
+            if (type === 'checkbox') {
+                val = (e.target as HTMLInputElement).checked;
             }
             setInvoice({ ...invoice, [name]: val });
         }
     };
     
+    const handleLocaleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+        const newLocaleKey = e.target.value as LocaleKey;
+        setSelectedLocaleKey(newLocaleKey);
+        if (invoice) {
+            const newConfig = LOCALES_CONFIG[newLocaleKey];
+            setInvoice({ 
+                ...invoice, 
+                tax_rate: newConfig.taxRate 
+            });
+        }
+    };
+
     const handleItemChange = (index: number, e: ChangeEvent<HTMLInputElement>) => {
         if (!invoice) return;
         const { name, value } = e.target;
@@ -105,8 +140,9 @@ const SupplierInvoiceEdit = () => {
         setInvoice({ ...invoice, items: newItems });
     };
 
-    const handleProductSelect = (index: number, productId: number) => {
+    const handleProductSelect = (index: number, productIdStr: string) => {
         if (!invoice) return;
+        const productId = parseInt(productIdStr);
         const product = mockProductsData.find(p => p.id === productId);
         if (!product) return;
 
@@ -158,6 +194,8 @@ const SupplierInvoiceEdit = () => {
     if (!invoice) {
         return <div className="text-center p-8">Loading...</div>;
     }
+    
+    const selectedConfig = LOCALES_CONFIG[selectedLocaleKey];
 
     return (
         <div>
@@ -170,16 +208,32 @@ const SupplierInvoiceEdit = () => {
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label htmlFor="supplier_id" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('supplier')}</label>
-                        <select id="supplier_id" name="supplier_id" value={invoice.supplier_id} onChange={handleMainDocChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-                            <option value="">{t('select_supplier')}</option>
-                            {mockSuppliersData.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
+                        <SearchableSelect
+                            options={supplierOptions}
+                            value={invoice.supplier_id.toString()}
+                            onChange={(value) => handleMainDocChange({ target: { name: 'supplier_id', value } } as ChangeEvent<HTMLSelectElement>)}
+                            placeholder={t('select_supplier')}
+                        />
                     </div>
                     <InputField label={t('contact_person')} name="contact_person" value={invoice.contact_person || ''} onChange={handleMainDocChange} />
                     <InputField label={t('project_name')} name="project_name" value={invoice.project_name || ''} onChange={handleMainDocChange} />
+                     <div>
+                        <label htmlFor="currency" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('currency')}</label>
+                        <select 
+                            id="currency" 
+                            name="currency" 
+                            value={selectedLocaleKey} 
+                            onChange={handleLocaleChange}
+                            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"
+                        >
+                            {Object.keys(LOCALES_CONFIG).map(key => (
+                                <option key={key} value={key}>{t(key as any)}</option>
+                            ))}
+                        </select>
+                    </div>
                     <InputField label={t('invoice_type')} name="supplier_invoice_type" value={invoice.supplier_invoice_type || ''} onChange={handleMainDocChange} />
                     <InputField label={t('issue_date')} name="issue_date" type="date" value={invoice.issue_date} onChange={handleMainDocChange} />
                     <InputField label={t('due_date')} name="due_date" type="date" value={invoice.due_date} onChange={handleMainDocChange} />
@@ -199,7 +253,14 @@ const SupplierInvoiceEdit = () => {
                     </div>
                     {invoice.items.map((item, index) => (
                         <div key={item.id} className="grid grid-cols-12 gap-2 items-center">
-                            <div className="col-span-12 md:col-span-3"><select name="product_id" value={item.product_id || ''} onChange={e => handleProductSelect(index, parseInt(e.target.value))} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"><option value="" disabled>{t('select_product')}</option>{mockProductsData.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+                            <div className="col-span-12 md:col-span-3">
+                                 <SearchableSelect
+                                    options={productOptions}
+                                    value={item.product_id?.toString() || ''}
+                                    onChange={(value) => handleProductSelect(index, value)}
+                                    placeholder={t('select_product')}
+                                />
+                            </div>
                             <div className="col-span-12 md:col-span-3"><input type="text" name="description" value={item.description} onChange={e => handleItemChange(index, e)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" /></div>
                             <div className="col-span-4 md:col-span-1"><input type="text" name="unit" value={item.unit} onChange={e => handleItemChange(index, e)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" /></div>
                             <div className="col-span-4 md:col-span-1"><input type="number" name="quantity" value={item.quantity} onChange={e => handleItemChange(index, e)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" /></div>
@@ -227,8 +288,8 @@ const SupplierInvoiceEdit = () => {
                         </div>
                         <div className="mt-4">
                             <label className="flex items-center space-x-2 rtl:space-x-reverse cursor-pointer">
-                                <input type="checkbox" name="is_taxable" checked={invoice.is_taxable} onChange={e => setInvoice({ ...invoice, is_taxable: e.target.checked })} className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"/>
-                                <span className="text-sm font-medium text-gray-900 dark:text-gray-300">{t('apply_tax')}</span>
+                                <input type="checkbox" name="is_taxable" checked={invoice.is_taxable} onChange={handleMainDocChange} className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"/>
+                                <span className="text-sm font-medium text-gray-900 dark:text-gray-300">{`${t('apply_tax')} (${invoice.tax_rate}%)`}</span>
                             </label>
                         </div>
                     </div>
@@ -239,9 +300,9 @@ const SupplierInvoiceEdit = () => {
                             <hr className="dark:border-gray-600"/>
                             <div className="flex justify-between font-semibold"><span>{t('subtotal')}</span><span>{subtotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                             {invoice.is_taxable && (
-                                <div className="flex justify-between"><span>{`${t('tax')} (${taxRate}%)`}</span><span>{taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
+                                <div className="flex justify-between"><span>{`${t('tax')} (${invoice.tax_rate}%)`}</span><span>{taxAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span></div>
                             )}
-                            <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</span></div>
+                            <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${total.toLocaleString(undefined, {minimumFractionDigits: 2})} ${selectedConfig.currencySymbol}`}</span></div>
                         </div>
                     </div>
                 </div>

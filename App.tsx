@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
@@ -31,6 +30,9 @@ import CustomerStatementDetail from './components/pages/contacts/CustomerStateme
 import SupplierStatementDetail from './components/pages/contacts/SupplierStatementDetail';
 import ReceiptVoucherEdit from './components/pages/accounting/ReceiptVoucherEdit';
 import PaymentVoucherEdit from './components/pages/accounting/PaymentVoucherEdit';
+import ProfilePage from './components/pages/ProfilePage';
+import ReceiptVoucherDetail from './components/pages/accounting/ReceiptVoucherDetail';
+import PaymentVoucherDetail from './components/pages/accounting/PaymentVoucherDetail';
 
 // This component handles app-wide settings like language direction and contains the main routing logic.
 const AppRouter = () => {
@@ -71,13 +73,16 @@ const AppRouter = () => {
               <Route path="/accounting/chart-of-accounts" element={<ChartOfAccounts />} />
               <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
               <Route path="/accounting/receipt-vouchers" element={<ReceiptVouchersList />} />
+              <Route path="/accounting/receipt-vouchers/:id" element={<ReceiptVoucherDetail />} />
               <Route path="/accounting/receipt-vouchers/:id/edit" element={<ReceiptVoucherEdit />} />
               <Route path="/accounting/payment-vouchers" element={<PaymentVouchersList />} />
+              <Route path="/accounting/payment-vouchers/:id" element={<PaymentVoucherDetail />} />
               <Route path="/accounting/payment-vouchers/:id/edit" element={<PaymentVoucherEdit />} />
               <Route path="/settings/products" element={<ProductsList />} />
               <Route path="/settings/app" element={<AppSettings />} />
               <Route path="/settings/users" element={<UsersList />} />
               <Route path="/settings/roles" element={<RolesList />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </MainLayout>

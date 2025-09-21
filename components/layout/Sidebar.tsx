@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { DashboardIcon, SalesIcon, InvoiceIcon, ContactsIcon, SettingsIcon, ChevronDownIcon, MenuIcon, XIcon, AccountingIcon } from '../icons/Icons';
+import { DashboardIcon, SalesIcon, InvoiceIcon, ContactsIcon, SettingsIcon, ChevronDownIcon, MenuIcon, XIcon, AccountingIcon, UserIcon } from '../icons/Icons';
 import { useTranslation } from '../../services/localization';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppSettings } from '../../contexts/AppSettingsContext';
@@ -10,7 +9,7 @@ import { Permission } from '../../types';
 const Sidebar = () => {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
-  const { companyInfo } = useAppSettings();
+  const { companyInfo, config } = useAppSettings();
   const [isAccountingOpen, setAccountingOpen] = useState(false);
   const [isInvoicesOpen, setInvoicesOpen] = useState(true);
   const [isContactsOpen, setContactsOpen] = useState(false);
@@ -27,14 +26,14 @@ const Sidebar = () => {
   ].some(p => hasPermission(p as Permission));
 
   const SidebarContent = () => (
-    <div className="h-full px-3 py-4 overflow-y-auto bg-[rgb(var(--color-surface))] shadow-lg lg:shadow-none">
+    <div className="h-full px-3 py-4 overflow-y-auto bg-[rgb(var(--color-surface))] shadow-lg lg:shadow-none flex flex-col">
         <div className="flex items-center justify-between mb-6 px-2">
             <h1 className="text-2xl font-bold text-[rgb(var(--color-primary))]">{companyInfo.APP_NAME.value}</h1>
             <button onClick={() => setSidebarOpen(false)} className="lg:hidden p-2 rounded-md hover:bg-[rgb(var(--color-muted))]">
                 <XIcon />
             </button>
         </div>
-      <ul className="space-y-2">
+      <ul className="space-y-2 flex-grow">
         <li>
           <NavLink to="/dashboard" onClick={() => setSidebarOpen(false)} className={({isActive}) => `${linkClasses} ${isActive ? activeLinkClasses : ''}`}>
              <span className="absolute inset-y-0 start-0 w-1 bg-[rgb(var(--color-primary))] rounded-e-full scale-y-0 group-[.active]:scale-y-100 transition-transform"></span>
@@ -116,28 +115,35 @@ const Sidebar = () => {
             )}
           </li>
         )}
+        <li>
+            <NavLink to="/profile" onClick={() => setSidebarOpen(false)} className={({isActive}) => `${linkClasses} ${isActive ? activeLinkClasses : ''}`}>
+                <UserIcon />
+                <span className="ms-3">{t('profile')}</span>
+            </NavLink>
+        </li>
       </ul>
     </div>
   );
-
+  
   return (
     <>
-      <button onClick={() => setSidebarOpen(true)} className="lg:hidden fixed top-4 end-4 z-40 p-2 bg-[rgb(var(--color-surface))] rounded-md">
-        <MenuIcon />
+      <button 
+        className="lg:hidden fixed top-4 start-4 z-20 p-2"
+        onClick={() => setSidebarOpen(true)}
+      >
+        <MenuIcon/>
       </button>
-      
-      {/* Mobile sidebar overlay */}
-      {isSidebarOpen && (
-        <div className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)}></div>
-      )}
 
-      {/* Mobile sidebar */}
-      <div className={`fixed top-0 bottom-0 z-50 transform transition-transform duration-300 ease-in-out lg:hidden w-64 ${isSidebarOpen ? 'start-0' : '-start-full'}`}>
-          <SidebarContent />
-      </div>
+      {/* Overlay for mobile */}
+      <div 
+        className={`fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setSidebarOpen(false)}
+      ></div>
 
-      {/* Desktop sidebar */}
-      <aside className="hidden lg:block w-64 flex-shrink-0" aria-label="Sidebar">
+      {/* Sidebar container */}
+      <aside 
+        className={`fixed lg:relative inset-y-0 start-0 z-40 w-72 h-full transition-transform transform ${isSidebarOpen ? 'translate-x-0' : (config.dir === 'rtl' ? 'translate-x-full lg:translate-x-0' : '-translate-x-full lg:translate-x-0')}`}
+      >
         <SidebarContent />
       </aside>
     </>

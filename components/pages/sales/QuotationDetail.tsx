@@ -223,13 +223,15 @@ const QuotationDetail = () => {
                 <h1 className="text-3xl font-bold">{t('quotation_details')}</h1>
                 <div className="flex flex-wrap gap-2">
                   <Button as={Link} to={`/quotations/${quotationData.id}/edit`} variant="outline">{t('edit')}</Button>
-                  <Button 
-                    variant="primary" 
-                    onClick={() => handleConvertToInvoice(quotationData.id)}
-                    disabled={loading === 'convert' || (quotationData.status !== 'accepted' && quotationData.status !== 'sent')}
-                  >
-                    {loading === 'convert' ? t('converting') : t('convert_to_invoice')}
-                  </Button>
+                  {!quotationData.invoice_id && (
+                    <Button 
+                        variant="primary" 
+                        onClick={() => handleConvertToInvoice(quotationData.id)}
+                        disabled={loading === 'convert' || (quotationData.status !== 'accepted' && quotationData.status !== 'sent')}
+                    >
+                        {loading === 'convert' ? t('converting') : t('convert_to_invoice')}
+                    </Button>
+                  )}
                   <Button variant="secondary" onClick={() => generateQuotationPDF(quotationData)} disabled={!!loading}>
                       {t('download_pdf')}
                   </Button>

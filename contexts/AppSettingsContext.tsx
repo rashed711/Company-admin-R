@@ -26,6 +26,7 @@ const defaultTemplate: DocumentTemplate = {
   footer: 'شكراً لتعاملكم معنا!',
   termsAndConditions: '1. يتم دفع 50% من المبلغ مقدماً.\n2. مدة صلاحية عرض السعر 30 يوماً.',
   headerImage: null,
+  showTitleInHeader: true,
 };
 
 

@@ -1,5 +1,5 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ReceiptVoucher } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
@@ -10,10 +10,30 @@ import { mockReceiptVouchersData } from '../../../services/mockData';
 const ReceiptVouchersList = () => {
   const { config } = useAppSettings();
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [vouchers, setVouchers] = useState<ReceiptVoucher[]>(mockReceiptVouchersData);
 
   const sortedData = useMemo(() =>
-    [...mockReceiptVouchersData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    []
+    [...vouchers].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
+    [vouchers]
+  );
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا السند؟')) {
+      setVouchers(prevVouchers => prevVouchers.filter(v => v.id !== id));
+      // In a real app, you would also make an API call to delete the voucher from the database.
+    }
+  };
+
+  const handleRowClick = (voucher: ReceiptVoucher) => {
+    navigate(`/accounting/receipt-vouchers/${voucher.id}`);
+  };
+
+  const actions = (row: ReceiptVoucher) => (
+    <div className="flex space-x-2 rtl:space-x-reverse" onClick={(e) => e.stopPropagation()}>
+      <Button as={Link} to={`/accounting/receipt-vouchers/${row.id}/edit`} variant="outline" size="sm">{t('edit')}</Button>
+      <Button onClick={() => handleDelete(row.id)} variant="danger" size="sm">{t('delete')}</Button>
+    </div>
   );
 
   const columns: { header: string; accessor: keyof ReceiptVoucher; render?: (value: any) => React.ReactNode; }[] = [
@@ -32,7 +52,7 @@ const ReceiptVouchersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('receipt_vouchers')}</h1>
         <Button variant="primary">{t('new_receipt_voucher')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} />
+      <Table columns={columns} data={sortedData} actions={actions} onRowClick={handleRowClick} />
     </div>
   );
 };

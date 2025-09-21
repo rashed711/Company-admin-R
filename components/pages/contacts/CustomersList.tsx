@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Customer } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
@@ -10,6 +9,11 @@ import { mockCustomersData } from '../../../services/mockData';
 const CustomersList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const sortedData = useMemo(() => 
+    [...mockCustomersData].sort((a, b) => a.name.localeCompare(b.name)),
+    []
+  );
 
   const columns: { header: string; accessor: keyof Customer; render?: (value: any) => React.ReactNode; }[] = [
     { header: t('name'), accessor: 'name' },
@@ -28,7 +32,7 @@ const CustomersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('customers')}</h1>
         <Button variant="primary">{t('new_customer')}</Button>
       </div>
-      <Table columns={columns} data={mockCustomersData} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} />
     </div>
   );
 };

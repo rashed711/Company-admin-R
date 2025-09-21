@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Card from '../ui/Card';
@@ -8,7 +7,7 @@ import { useAppSettings } from '../../contexts/AppSettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
 
 const Dashboard = () => {
-  const { config } = useAppSettings();
+  const { config, companyInfo } = useAppSettings();
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
 
@@ -27,7 +26,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold text-[rgb(var(--color-text-primary))] mb-8">{t('welcome_to_enjaz')}</h1>
+      <h1 className="text-3xl font-extrabold text-[rgb(var(--color-text-primary))] mb-8">{t('welcome_message', { appName: companyInfo.APP_NAME.value })}</h1>
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">

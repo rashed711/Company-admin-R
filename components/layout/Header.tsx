@@ -1,15 +1,11 @@
 
 import React from 'react';
-import { UserIcon } from '../icons/Icons';
 import { useTranslation } from '../../services/localization';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import Button from '../ui/Button';
 
 const Header = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  const { user, logout } = useAuth();
 
   const getPageTitle = (pathname: string): string => {
     // This is a simple mapping. A more robust solution might use a dedicated mapping object.
@@ -36,15 +32,6 @@ const Header = () => {
     <header className="flex items-center justify-between p-4 bg-[rgb(var(--color-surface))] shadow-sm">
       <div>
         <h2 className="text-xl font-semibold text-[rgb(var(--color-text-primary))]">{getPageTitle(location.pathname)}</h2>
-      </div>
-      <div className="flex items-center space-x-4 rtl:space-x-reverse">
-        <div className="flex items-center bg-[rgb(var(--color-muted))] px-3 py-1.5 rounded-full">
-            <UserIcon />
-            <span className="hidden sm:inline mx-2 text-sm font-medium">{user?.name || t('username_placeholder')}</span>
-        </div>
-        <Button variant="outline" size="sm" onClick={logout}>
-          {t('logout')}
-        </Button>
       </div>
     </header>
   );

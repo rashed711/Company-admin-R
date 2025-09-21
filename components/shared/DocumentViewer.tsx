@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Quotation, Invoice, CompanyInfo, DocumentTemplate, LocaleConfig, SupplierInvoice, InvoiceItem, SupplierInvoiceItem } from '../../types';
 import { useTranslation } from '../../services/localization';
@@ -73,22 +74,24 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                     })}
                 </div>
                 <div className={`text-${isRTL ? 'left' : 'right'}`}>
-                    <h2 className="text-4xl font-bold uppercase">{docTitle}</h2>
-                    <p className="mt-2">{`${docNumberLabel}: ${document.id}`}</p>
-                    <p>{`${t('issue_date')}: ${document.issue_date}`}</p>
-                    {type !== 'quotation' && (
-                        <p>{`${dueDateLabel}: ${dueDateValue}`}</p>
-                    )}
+                    {template.showTitleInHeader && <h2 className="text-4xl font-bold uppercase">{docTitle}</h2>}
                 </div>
             </header>
             
             {/* Details Section */}
             <section className="mb-12 text-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-2 p-4 border rounded-lg dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 p-4 border rounded-lg dark:border-gray-700">
                     <div><span className="font-semibold">{isSupplierInvoice ? t('supplier') : t('customer')}:</span> {entityName || '-'}</div>
                     <div><span className="font-semibold">{t('contact_person')}:</span> {doc.contact_person || '-'}</div>
                     <div><span className="font-semibold">{t('project_name')}:</span> {doc.project_name || '-'}</div>
+                    
                     <div><span className="font-semibold">{docTypeLabel}:</span> {docTypeValue || '-'}</div>
+                    <div><span className="font-semibold">{docNumberLabel}:</span> {document.id}</div>
+                    <div><span className="font-semibold">{t('issue_date')}:</span> {document.issue_date}</div>
+                    
+                    {type !== 'quotation' && (
+                        <div><span className="font-semibold">{dueDateLabel}:</span> {dueDateValue}</div>
+                    )}
                 </div>
             </section>
 

@@ -4,7 +4,7 @@ import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import Button from '../../ui/Button';
 
-const LoginPage = () => {
+export default function LoginPage() {
     const { login } = useAuth();
     const { t } = useTranslation();
     const { companyInfo } = useAppSettings();
@@ -29,7 +29,7 @@ const LoginPage = () => {
             <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md dark:bg-gray-800">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-sky-600 dark:text-sky-400">{companyInfo.APP_NAME.value}</h1>
-                    <p className="mt-2 text-gray-600 dark:text-gray-400">{t('welcome_to_enjaz')}</p>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">{t('welcome_message', { appName: companyInfo.APP_NAME.value })}</p>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div>
@@ -77,6 +77,4 @@ const LoginPage = () => {
             </div>
         </div>
     );
-};
-
-export default LoginPage;
+}

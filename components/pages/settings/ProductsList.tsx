@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Product } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
@@ -16,6 +15,11 @@ const ProductsList = () => {
   const [products, setProducts] = useState<Product[]>(mockProductsData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product> | null>(null);
+
+  const sortedData = useMemo(() => 
+    [...products].sort((a, b) => a.name.localeCompare(b.name)), 
+    [products]
+  );
 
   const handleAddNew = () => {
     setCurrentProduct({
@@ -82,7 +86,7 @@ const ProductsList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('products_and_services')}</h1>
         <Button variant="primary" onClick={handleAddNew}>{t('new_product_service')}</Button>
       </div>
-      <Table columns={columns} data={products} onRowClick={handleEdit} />
+      <Table columns={columns} data={sortedData} onRowClick={handleEdit} />
 
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={currentProduct && products.some(p => p.id === currentProduct.id) ? t('edit_product') : t('new_product')}>
         {currentProduct && (

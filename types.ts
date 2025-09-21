@@ -32,6 +32,7 @@ export interface DocumentTemplate {
   footer: string;
   termsAndConditions: string;
   headerImage?: string | null;
+  showTitleInHeader?: boolean;
 }
 
 
@@ -146,7 +147,7 @@ export const ALL_PERMISSIONS: Permission[] = flattenPermissions(PERMISSION_STRUC
 
 
 export interface Role {
-    id: 'admin' | 'accountant' | 'sales_manager' | 'sales_person';
+    id: string;
     name: string;
     permissions: Permission[];
 }

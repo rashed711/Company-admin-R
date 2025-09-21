@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const iconProps = {
@@ -84,8 +83,9 @@ export const ChevronDownIcon = ({className = ''}) => (
   </svg>
 );
 
-export const UserIcon = () => (
-    <svg {...iconProps} viewBox="0 0 24 24">
+// FIX: Modified UserIcon to accept a className prop to allow for custom styling.
+export const UserIcon = ({ className }: { className?: string }) => (
+    <svg {...iconProps} className={className || iconProps.className} viewBox="0 0 24 24">
       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
       <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
       <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />

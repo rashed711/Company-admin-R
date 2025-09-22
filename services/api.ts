@@ -1,5 +1,6 @@
+
 import { supabase } from './supabaseClient';
-import { Product, Quotation, Invoice, SupplierInvoice, Customer, Supplier, ReceiptVoucher, PaymentVoucher, InvoiceItem } from '../types';
+import { Product, Quotation, Invoice, SupplierInvoice, Customer, Supplier, ReceiptVoucher, PaymentVoucher, InvoiceItem, JournalEntry, JournalEntryItem } from '../types';
 
 // Generic fetch function
 const fetchData = async (table: string) => {
@@ -20,7 +21,7 @@ const getCustomers = () => fetchData('customers');
 const getSuppliers = () => fetchData('suppliers');
 
 // --- QUOTATIONS ---
-const getQuotations = () => supabase.from('quotations').select('*, customer:customers(name), created_by_user:users(full_name)').order('created_at', { ascending: false });
+const getQuotations = () => supabase.from('quotations').select('*, customer:customers(name), created_by_user:created_by(full_name)').order('created_at', { ascending: false });
 const getQuotationById = (id: number) => supabase.from('quotations').select('*, items:quotation_items(*), customer:customers(*)').eq('id', id).single();
 const addQuotation = (quotation: Partial<Quotation>) => {
     const { items, ...quotationData } = quotation;
@@ -35,7 +36,7 @@ const updateQuotation = (id: number, quotation: Partial<Quotation>) => {
 const deleteQuotation = (id: number) => supabase.from('quotations').delete().eq('id', id);
 
 // --- INVOICES ---
-const getInvoices = () => supabase.from('invoices').select('*, customer:customers(name), created_by_user:users(full_name)').order('created_at', { ascending: false });
+const getInvoices = () => supabase.from('invoices').select('*, customer:customers(name), created_by_user:created_by(full_name)').order('created_at', { ascending: false });
 const getInvoiceById = (id: number) => supabase.from('invoices').select('*, items:invoice_items(*), customer:customers(*)').eq('id', id).single();
 const addInvoice = (invoice: Partial<Invoice>) => {
     const { items, ...invoiceData } = invoice;
@@ -51,7 +52,7 @@ const deleteInvoice = (id: number) => supabase.from('invoices').delete().eq('id'
 
 
 // --- SUPPLIER INVOICES ---
-const getSupplierInvoices = () => supabase.from('supplier_invoices').select('*, supplier:suppliers(name), created_by_user:users(full_name)').order('created_at', { ascending: false });
+const getSupplierInvoices = () => supabase.from('supplier_invoices').select('*, supplier:suppliers(name), created_by_user:created_by(full_name)').order('created_at', { ascending: false });
 const getSupplierInvoiceById = (id: number) => supabase.from('supplier_invoices').select('*, items:supplier_invoice_items(*), supplier:suppliers(*)').eq('id', id).single();
 const addSupplierInvoice = (invoice: Partial<SupplierInvoice>) => {
     const { items, ...invoiceData } = invoice;
@@ -66,14 +67,36 @@ const updateSupplierInvoice = (id: number, invoice: Partial<SupplierInvoice>) =>
 const deleteSupplierInvoice = (id: number) => supabase.from('supplier_invoices').delete().eq('id', id);
 
 
-// Vouchers
+// --- VOUCHERS ---
 const getReceiptVouchers = () => supabase.from('receipt_vouchers').select('*, customer:customers(name)').order('created_at', { ascending: false });
 const deleteReceiptVoucher = (id: number) => supabase.from('receipt_vouchers').delete().eq('id', id);
 
 const getPaymentVouchers = () => supabase.from('payment_vouchers').select('*, supplier:suppliers(name)').order('created_at', { ascending: false });
 const deletePaymentVoucher = (id: number) => supabase.from('payment_vouchers').delete().eq('id', id);
 
-// Dashboard counts
+// --- ACCOUNTING ---
+const getChartOfAccounts = () => supabase.from('chart_of_accounts').select('*').order('name');
+const getJournalEntries = () => supabase.from('journal_entries_view').select('*');
+const addJournalEntry = (entry: Partial<JournalEntry>) => {
+    const { items, ...entryData } = entry;
+    const itemsData = items?.map(({ id, account_name, ...rest }) => rest); // Remove UI-only fields
+    return supabase.rpc('create_journal_entry_with_items', { entry_data: entryData, items_data: itemsData });
+};
+
+// --- USERS ---
+const getUsers = async () => {
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, name:full_name, role, manager_id');
+    return { data, error };
+};
+
+const updateUser = (id: string, updates: { role: string; manager_id: string | null }) => {
+    return supabase.from('users').update(updates).eq('id', id);
+};
+
+
+// --- DASHBOARD ---
 const getDashboardCounts = async () => {
     const [
         { count: quotations_count },
@@ -117,5 +140,10 @@ export {
     deleteReceiptVoucher,
     getPaymentVouchers,
     deletePaymentVoucher,
-    getDashboardCounts
+    getDashboardCounts,
+    getChartOfAccounts,
+    getJournalEntries,
+    addJournalEntry,
+    getUsers,
+    updateUser,
 };

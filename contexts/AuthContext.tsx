@@ -120,11 +120,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
-    // Set loading to true when the provider mounts to block rendering until auth is resolved.
-    setLoading(true);
+    // A one-time function to check the initial session state on component mount.
+    const checkInitialSession = async () => {
+        try {
+            // Get the current session. This doesn't trigger a listener, it's a direct async check.
+            const { data: { session }, error } = await supabase.auth.getSession();
 
-    // Use onAuthStateChange as the single source of truth for the session.
-    // It fires immediately with the current session status.
+            if (error) {
+                console.error("Error getting initial session:", error);
+                setUser(null);
+            } else if (session?.user) {
+                // If a session exists, fetch the user's application-specific profile.
+                const userProfile = await fetchUserProfile(session.user.id, session.user.email);
+                setUser(userProfile);
+            } else {
+                // No session found.
+                setUser(null);
+            }
+        } catch (e) {
+            console.error("An unexpected error occurred during initial session check:", e);
+            setUser(null);
+        } finally {
+            // This is the most important part: ensure the loading screen is hidden
+            // once the initial check is complete, regardless of the outcome.
+            setLoading(false);
+        }
+    };
+    
+    // Run the initial check.
+    checkInitialSession();
+
+    // Now, set up the listener for any *subsequent* auth state changes (e.g., login, logout).
+    // This listener will not manage the initial `loading` state, preventing race conditions.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
         if (session?.user) {
             const userProfile = await fetchUserProfile(session.user.id, session.user.email);
@@ -132,13 +159,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         } else {
             setUser(null);
         }
-        
-        // CRITICAL: Set loading to false only after the entire auth flow (session check + profile fetch) is complete.
-        // This ensures the main app content doesn't render prematurely and eliminates race conditions.
-        setLoading(false);
     });
 
-    // Cleanup subscription on component unmount.
+    // Cleanup the subscription when the component unmounts.
     return () => {
         subscription.unsubscribe();
     };

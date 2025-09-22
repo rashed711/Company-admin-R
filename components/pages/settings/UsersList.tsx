@@ -1,18 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
 import { ROLES, useAuth } from '../../../contexts/AuthContext';
 import Modal from '../../ui/Modal';
-import { mockUsersData } from '../../../services/mockData';
+import { getUsers, updateUser } from '../../../services/api';
 import InputField from '../../ui/InputField';
 
 const UsersList = () => {
   const { t } = useTranslation();
   const { signUp } = useAuth();
-  const [users, setUsers] = useState<User[]>(mockUsersData);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // State for Edit Modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -29,6 +30,28 @@ const UsersList = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const fetchUsers = async () => {
+    setIsLoading(true);
+    const { data, error } = await getUsers();
+    if (data) {
+        // The data from API has role as a string ID. Map it to a Role object.
+        const mappedUsers: User[] = data.map(u => ({
+            id: u.id,
+            name: u.name,
+            role: ROLES[u.role as keyof typeof ROLES] || ROLES.sales_person,
+            manager_id: u.manager_id,
+        }));
+        setUsers(mappedUsers);
+    } else {
+        alert(error?.message);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+      fetchUsers();
+  }, []);
 
   const handleEditClick = (user: User) => {
     setSelectedUser(JSON.parse(JSON.stringify(user))); // Deep copy to avoid direct state mutation
@@ -52,10 +75,20 @@ const UsersList = () => {
       }
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     if (selectedUser) {
-      setUsers(users.map(u => u.id === selectedUser.id ? selectedUser : u));
-      handleCloseEditModal();
+        setLoading(true);
+        const { error } = await updateUser(selectedUser.id, {
+            role: selectedUser.role.id,
+            manager_id: selectedUser.manager_id,
+        });
+        setLoading(false);
+        if (error) {
+            alert(`Error updating user: ${error.message}`);
+        } else {
+            await fetchUsers();
+            handleCloseEditModal();
+        }
     }
   };
 
@@ -97,14 +130,14 @@ const UsersList = () => {
             setError(signUpError);
         }
     } else if (createdUser) {
-        setUsers([...users, createdUser]);
+        await fetchUsers();
         setIsNewUserModalOpen(false);
     }
   };
   
   const columns: { header: string; accessor: keyof User; render?: (value: any, row: User) => React.ReactNode; }[] = [
     { header: t('name'), accessor: 'name' },
-    { header: t('email'), accessor: 'email' },
+    { header: t('email'), accessor: 'email', render: (email: string | undefined) => email || '-' },
     { header: t('role'), accessor: 'role', render: (role: User['role']) => role.name },
     { header: t('manager'), accessor: 'manager_id', render: (managerId: string | null) => {
         if (!managerId) return '-';
@@ -118,14 +151,14 @@ const UsersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('user_management')}</h1>
         <Button variant="primary" onClick={handleAddNewUser}>{t('new_user')}</Button>
       </div>
-      <Table columns={columns} data={users} onRowClick={handleEditClick} />
+      <Table columns={columns} data={users} onRowClick={handleEditClick} isLoading={isLoading} />
 
       {/* Edit User Modal */}
       <Modal isOpen={isEditModalOpen} onClose={handleCloseEditModal} title={t('edit_user')}>
         {selectedUser && (
             <div className="space-y-4">
                 <InputField label={t('name')} type="text" value={selectedUser.name} readOnly />
-                <InputField label={t('email')} type="email" value={selectedUser.email} readOnly />
+                <InputField label={t('email')} type="email" value={selectedUser.email || ''} readOnly />
                 <div>
                   <label htmlFor="role-select" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
                     {t('role')}
@@ -161,7 +194,9 @@ const UsersList = () => {
                 </div>
                 <div className="mt-6 flex justify-end space-x-2 rtl:space-x-reverse">
                     <Button variant="outline" onClick={handleCloseEditModal}>{t('cancel')}</Button>
-                    <Button variant="primary" onClick={handleSaveChanges}>{t('save_changes')}</Button>
+                    <Button variant="primary" onClick={handleSaveChanges} disabled={loading}>
+                        {loading ? '...' : t('save_changes')}
+                    </Button>
                 </div>
             </div>
         )}

@@ -122,8 +122,10 @@ export const mockSupplierTransactions: AccountTransaction[] = [
 
 // Mock Journal Entries
 export const mockJournalEntriesData: JournalEntry[] = [
-    { id: 1, date: '2023-11-20', time: '12:00', description: 'Record monthly salaries', debit: 15000, credit: 15000, created_at: '2023-11-20T12:00:00Z' },
-    { id: 2, date: '2023-11-18', time: '09:30', description: 'Purchase office supplies', debit: 500, credit: 500, created_at: '2023-11-18T09:30:00Z' }
+    // FIX: Renamed 'time' to 'created_time', 'debit' to 'total_debit', and 'credit' to 'total_credit' to match the JournalEntry type.
+    { id: 1, date: '2023-11-20', created_time: '12:00', description: 'Record monthly salaries', total_debit: 15000, total_credit: 15000, created_at: '2023-11-20T12:00:00Z' },
+    // FIX: Renamed 'time' to 'created_time', 'debit' to 'total_debit', and 'credit' to 'total_credit' to match the JournalEntry type.
+    { id: 2, date: '2023-11-18', created_time: '09:30', description: 'Purchase office supplies', total_debit: 500, total_credit: 500, created_at: '2023-11-18T09:30:00Z' }
 ];
 
 // Mock Vouchers

@@ -155,7 +155,7 @@ export interface Role {
 export interface User {
     id: string; // Changed to string for Supabase UUID
     name: string;
-    email: string;
+    email?: string;
     role: Role;
     manager_id?: string | null; // Changed to string for Supabase UUID
 }
@@ -268,6 +268,36 @@ export interface SupplierInvoice extends DocumentShared {
 }
 
 // =================== Accounting Module ===================
+export interface ChartOfAccount {
+    id: number;
+    name: string;
+    type: 'asset' | 'liability' | 'equity' | 'revenue' | 'expense';
+    created_at: string;
+}
+
+export interface JournalEntryItem {
+    id?: number; // Optional for new items
+    journal_entry_id?: number;
+    account_id: number;
+    account_name?: string; // for UI display
+    debit: number;
+    credit: number;
+}
+
+export interface JournalEntry {
+    id: number;
+    date: string;
+    description: string;
+    created_at: string;
+    created_time: string;
+    created_by?: string; // UUID
+    items?: JournalEntryItem[];
+    // For list view from the database view
+    created_by_name?: string;
+    total_debit?: number;
+    total_credit?: number;
+}
+
 export interface ReceiptVoucher {
     id: number;
     customer_id: number;
@@ -292,16 +322,6 @@ export interface PaymentVoucher {
     created_at: string;
     created_time: string;
     created_by?: string; // Changed to string for Supabase UUID
-}
-
-export interface JournalEntry {
-    id: number;
-    date: string;
-    time: string;
-    description: string;
-    debit: number;
-    credit: number;
-    created_at: string;
 }
 
 export interface AccountTransaction {

@@ -36,6 +36,7 @@ import ReceiptVoucherDetail from './components/pages/accounting/ReceiptVoucherDe
 import PaymentVoucherDetail from './components/pages/accounting/PaymentVoucherDetail';
 import PageTransitionLoader from './components/ui/PageTransitionLoader';
 import DbErrorPage from './components/pages/auth/DbErrorPage';
+import JournalEntryEdit from './components/pages/accounting/JournalEntryEdit';
 
 const AppContent = () => {
   const { config } = useAppSettings();
@@ -98,6 +99,7 @@ const AppContent = () => {
               <Route path="/contacts/suppliers/:id/statement/view" element={<SupplierStatementDetail />} />
               <Route path="/accounting/chart-of-accounts" element={<ChartOfAccounts />} />
               <Route path="/accounting/journal-entries" element={<JournalEntriesList />} />
+              <Route path="/accounting/journal-entries/new" element={<JournalEntryEdit />} />
               <Route path="/accounting/receipt-vouchers" element={<ReceiptVouchersList />} />
               <Route path="/accounting/receipt-vouchers/:id" element={<ReceiptVoucherDetail />} />
               <Route path="/accounting/receipt-vouchers/:id/edit" element={<ReceiptVoucherEdit />} />

@@ -153,11 +153,11 @@ export interface Role {
 }
 
 export interface User {
-    id: number;
+    id: string; // Changed to string for Supabase UUID
     name: string;
     email: string;
     role: Role;
-    manager_id?: number | null;
+    manager_id?: string | null; // Changed to string for Supabase UUID
 }
 
 // =================== Core Business Models ===================
@@ -168,7 +168,7 @@ export interface Customer {
   phone: string;
   address: string;
   created_at: string;
-  created_by?: number; // User ID
+  created_by?: string; // Changed to string for Supabase UUID
 }
 
 export interface Supplier {
@@ -178,7 +178,7 @@ export interface Supplier {
   phone: string;
   address: string;
   created_at: string;
-  created_by?: number; // User ID
+  created_by?: string; // Changed to string for Supabase UUID
 }
 
 export interface Product {
@@ -225,7 +225,7 @@ interface DocumentShared {
   total: number;
   created_at: string;
   created_time: string;
-  created_by?: number; // User ID
+  created_by?: string; // Changed to string for Supabase UUID
   is_taxable: boolean;
   discount_amount: number;
   discount_type: 'percentage' | 'amount';
@@ -278,7 +278,7 @@ export interface ReceiptVoucher {
     description: string;
     created_at: string;
     created_time: string;
-    created_by?: number;
+    created_by?: string; // Changed to string for Supabase UUID
 }
 
 export interface PaymentVoucher {
@@ -291,7 +291,7 @@ export interface PaymentVoucher {
     description: string;
     created_at: string;
     created_time: string;
-    created_by?: number;
+    created_by?: string; // Changed to string for Supabase UUID
 }
 
 export interface JournalEntry {

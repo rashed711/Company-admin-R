@@ -1,18 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Customer } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
 import { Link, useNavigate } from 'react-router-dom';
-import { mockCustomersData } from '../../../services/mockData';
+import { getCustomers } from '../../../services/api';
 
 const CustomersList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCustomers = async () => {
+        setIsLoading(true);
+        const { data, error } = await getCustomers();
+        if (data) {
+            setCustomers(data);
+        } else {
+            alert(error?.message);
+        }
+        setIsLoading(false);
+    };
+    fetchCustomers();
+  }, []);
 
   const sortedData = useMemo(() => 
-    [...mockCustomersData].sort((a, b) => a.name.localeCompare(b.name)),
-    []
+    [...customers].sort((a, b) => a.name.localeCompare(b.name)),
+    [customers]
   );
 
   const columns: { header: string; accessor: keyof Customer; render?: (value: any) => React.ReactNode; }[] = [
@@ -32,7 +48,7 @@ const CustomersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('customers')}</h1>
         <Button variant="primary">{t('new_customer')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} isLoading={isLoading}/>
     </div>
   );
 };

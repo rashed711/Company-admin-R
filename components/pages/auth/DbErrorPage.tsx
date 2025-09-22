@@ -1,23 +1,12 @@
 
 
-import { createClient } from '@supabase/supabase-js';
-import { SUPABASE_CONFIG } from '../config';
+import React, { useState } from 'react';
+import Button from '../../ui/Button';
 
-// Note: The Supabase client is initialized with placeholder credentials.
-// You must replace them in `config.ts` with your actual Supabase project details.
-export const supabase = createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_KEY, {
-  global: {
-    // By default, the Supabase client might cache API responses. This can lead to issues
-    // on page reload where stale data causes the app to hang.
-    // By setting 'Cache-Control' to 'no-cache', we ensure the app always fetches
-    // fresh data, definitively resolving the stuck loading screen issue.
-    headers: { 'Cache-Control': 'no-cache' },
-  },
-});
+const DbErrorPage = () => {
+    const [copyButtonText, setCopyButtonText] = useState('Copy SQL Code');
 
-
-/*
--- This script fixes the database security configuration.
+    const correctSqlScript = `-- This script fixes the database security configuration.
 -- Run this ENTIRE script in your Supabase SQL Editor. It is safe to run multiple times.
 
 -- Drop existing objects to ensure a clean slate.
@@ -333,4 +322,85 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.convert_quotation_to_invoice(BIGINT) TO authenticated;
-*/
+`;
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(correctSqlScript.trim())
+            .then(() => {
+                setCopyButtonText('Copied!');
+                setTimeout(() => setCopyButtonText('Copy SQL Code'), 2000);
+            })
+            .catch(err => {
+                setCopyButtonText('Failed to copy');
+                console.error('Failed to copy: ', err)
+            });
+    };
+
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900 p-4 font-sans">
+            <div className="w-full max-w-3xl p-6 sm:p-8 space-y-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border-t-4 border-red-500">
+                <div className="text-center">
+                    <h1 className="text-3xl font-extrabold text-slate-800 dark:text-slate-100">Database Security Fix Required</h1>
+                    <p className="mt-2 text-slate-600 dark:text-slate-400">
+                        A critical security function in your database is misconfigured, causing a loop. Please follow the steps below to fix it.
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-500">This is a one-time setup step that must be done in your Supabase project dashboard.</p>
+                </div>
+
+                <div className="space-y-5">
+                    {/* Step 1 */}
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center justify-center bg-sky-600 text-white rounded-full w-8 h-8 flex-shrink-0 font-bold text-lg">1</div>
+                            <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">Copy the SQL Script</h3>
+                        </div>
+                        <div className="ps-11">
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">This script defines all the necessary tables and security functions to prevent the recursion error.</p>
+                            <div className="relative bg-slate-900 rounded-lg">
+                                <pre className="text-sm text-slate-300 p-4 overflow-x-auto max-h-60 rounded-lg scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800">
+                                    <code>{correctSqlScript.trim()}</code>
+                                </pre>
+                                <button
+                                    onClick={copyToClipboard}
+                                    className="absolute top-2 end-2 bg-slate-700 text-white text-xs font-semibold py-1 px-3 rounded-md hover:bg-slate-600 transition-colors"
+                                >
+                                    {copyButtonText}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center justify-center bg-sky-600 text-white rounded-full w-8 h-8 flex-shrink-0 font-bold text-lg">2</div>
+                            <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">Navigate to Supabase SQL Editor</h3>
+                        </div>
+                        <div className="ps-11 text-sm text-slate-500 dark:text-slate-400">
+                           <p>Open your project on <a href="https://app.supabase.com" target="_blank" rel="noopener noreferrer" className="text-sky-500 hover:underline">app.supabase.com</a>. In the left sidebar, click the <strong className="text-slate-600 dark:text-slate-300">Database icon</strong>, then click on <strong className="text-slate-600 dark:text-slate-300">SQL Editor</strong>.</p>
+                        </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center justify-center bg-sky-600 text-white rounded-full w-8 h-8 flex-shrink-0 font-bold text-lg">3</div>
+                            <h3 className="font-bold text-lg text-slate-700 dark:text-slate-200">Paste and Run the Script</h3>
+                        </div>
+                         <div className="ps-11 text-sm text-slate-500 dark:text-slate-400">
+                           <p>In the SQL Editor, paste the code you copied. Click the green <strong className="text-slate-600 dark:text-slate-300">RUN</strong> button. You should see a "Success" message.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div className="text-center pt-4">
+                  <Button variant="primary" size="lg" onClick={() => window.location.reload()}>
+                    I Have Run the Script, Log Me In
+                  </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DbErrorPage;

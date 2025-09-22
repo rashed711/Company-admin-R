@@ -1,7 +1,8 @@
-
 import React, { createContext, useState, useContext, ReactNode, useMemo, useEffect } from 'react';
 import { LOCALES_CONFIG, DEFAULT_LOCALE_KEY, DEFAULT_COMPANY_INFO } from '../config';
 import { LocaleKey, LocaleConfig, CompanyInfo, DocumentTemplate } from '../types';
+
+type Theme = 'light' | 'dark';
 
 interface AppSettingsContextType {
   localeKey: LocaleKey;
@@ -17,6 +18,8 @@ interface AppSettingsContextType {
   setSalesInvoiceTemplate: React.Dispatch<React.SetStateAction<DocumentTemplate>>;
   purchaseInvoiceTemplate: DocumentTemplate;
   setPurchaseInvoiceTemplate: React.Dispatch<React.SetStateAction<DocumentTemplate>>;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
@@ -48,6 +51,28 @@ export const AppSettingsProvider: React.FC<{ children: ReactNode }> = ({ childre
     termsAndConditions: 'يجب سداد المبلغ عند الاستلام.',
   });
 
+  const [theme, setTheme] = useState<Theme>(() => {
+    const storedTheme = localStorage.getItem('app-theme') as Theme | null;
+    if (storedTheme) {
+        return storedTheme;
+    }
+    // FIX: Fallback to system preference if no theme is stored.
+    // This improves the user experience on their first visit.
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    localStorage.setItem('app-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
+
   // Update taxRate when locale changes
   useEffect(() => {
     setTaxRate(config.taxRate);
@@ -68,6 +93,8 @@ export const AppSettingsProvider: React.FC<{ children: ReactNode }> = ({ childre
     setSalesInvoiceTemplate,
     purchaseInvoiceTemplate,
     setPurchaseInvoiceTemplate,
+    theme,
+    toggleTheme,
   };
 
   return (

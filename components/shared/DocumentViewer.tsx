@@ -46,8 +46,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
     : (document.discount_amount || 0);
 
   return (
-    <div className="bg-gray-200 dark:bg-gray-900 p-4 sm:p-8 rounded-lg">
-        <div id="print-area" className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-gray-900 dark:text-gray-200">
+    <div className="bg-[rgb(var(--color-muted))] p-4 sm:p-8 rounded-lg">
+        <div id="print-area" className="bg-[rgb(var(--color-surface))] shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-[rgb(var(--color-text-primary))]">
             {/* Header Image */}
             {template.headerImage && (
                 <div className="mb-8 text-center">
@@ -56,7 +56,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
             )}
 
             {/* Template Header Text */}
-            {template.header && <p className="text-center text-sm text-gray-500 dark:text-gray-400 mb-6">{template.header}</p>}
+            {template.header && <p className="text-center text-sm text-[rgb(var(--color-text-secondary))] mb-6">{template.header}</p>}
 
             {/* Main Header */}
             <header className="flex justify-between items-start mb-12">
@@ -80,7 +80,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
             
             {/* Details Section */}
             <section className="mb-12 text-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 p-4 border rounded-lg dark:border-gray-700">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4 p-4 border rounded-lg border-[rgb(var(--color-border))]">
                     <div><span className="font-semibold">{isSupplierInvoice ? t('supplier') : t('customer')}:</span> {entityName || '-'}</div>
                     <div><span className="font-semibold">{t('contact_person')}:</span> {doc.contact_person || '-'}</div>
                     <div><span className="font-semibold">{t('project_name')}:</span> {doc.project_name || '-'}</div>
@@ -98,7 +98,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
             {/* Items Table */}
             <section>
                 <table className="w-full text-sm text-start">
-                    <thead className="bg-gray-100 dark:bg-gray-700">
+                    <thead className="bg-[rgb(var(--color-muted))]">
                         <tr>
                             <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('product_name')}</th>
                             <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('description')}</th>
@@ -110,7 +110,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                     </thead>
                     <tbody>
                         {(document.items as (InvoiceItem | SupplierInvoiceItem)[]).map((item) => (
-                            <tr key={item.id} className="border-b dark:border-gray-700">
+                            <tr key={item.id} className="border-b border-[rgb(var(--color-border))]">
                                 <td className="p-3">{item.product_name}</td>
                                 <td className="p-3">{item.description}</td>
                                 <td className="p-3 text-center">{item.unit}</td>
@@ -131,17 +131,17 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, type, company
                         {discountValue > 0 && (
                             <div className="flex justify-between"><span>{t('discount')}</span><span>{`-${(discountValue as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                         )}
-                        <div className="flex justify-between font-semibold pt-1 border-t dark:border-gray-700"><span>{t('subtotal')}</span><span>{`${(document.subtotal as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        <div className="flex justify-between font-semibold pt-1 border-t border-[rgb(var(--color-border))]"><span>{t('subtotal')}</span><span>{`${(document.subtotal as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                         {document.is_taxable && (
                            <div className="flex justify-between"><span>{`${t('tax')} (${document.tax_rate}%)`}</span><span>{`${(document.tax_amount as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                         )}
-                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 dark:border-gray-600"><span>{t('total')}</span><span>{`${(document.total as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
+                        <div className="flex justify-between font-bold text-lg pt-2 border-t-2 border-[rgb(var(--color-border))]"><span>{t('total')}</span><span>{`${(document.total as any).toLocaleString(undefined, {minimumFractionDigits: 2})}${currency}`}</span></div>
                     </div>
                 </div>
             </section>
 
             {/* Terms and Footer */}
-            <footer className="mt-12 pt-8 border-t dark:border-gray-700 text-sm text-gray-600 dark:text-gray-400">
+            <footer className="mt-12 pt-8 border-t border-[rgb(var(--color-border))] text-sm text-[rgb(var(--color-text-secondary))]">
                 {template.termsAndConditions && (
                     <div className="mb-6">
                         <h4 className="font-bold mb-2">{t('terms_and_conditions')}</h4>

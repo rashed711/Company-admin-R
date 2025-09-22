@@ -1,4 +1,3 @@
-
 import React, { ReactNode } from 'react';
 import { XIcon } from '../icons/Icons';
 
@@ -21,16 +20,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       onClick={onClose}
     >
       <div 
-        className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg m-4"
+        className="relative bg-[rgb(var(--color-surface))] rounded-xl shadow-2xl w-full max-w-lg m-4"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
       >
-        <div className="flex items-start justify-between p-5 border-b rounded-t dark:border-gray-700">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
+        <div className="flex items-start justify-between p-5 border-b rounded-t border-[rgb(var(--color-border))]">
+          <h3 className="text-xl font-semibold text-[rgb(var(--color-text-primary))]" id="modal-title">
             {title}
           </h3>
           <button 
             type="button" 
-            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ms-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            className="text-gray-400 bg-transparent hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-text-primary))] rounded-lg text-sm p-1.5 ms-auto inline-flex items-center"
             onClick={onClose}
             aria-label="Close"
           >

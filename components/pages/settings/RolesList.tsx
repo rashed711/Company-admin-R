@@ -4,6 +4,7 @@ import { ROLES } from '../../../contexts/AuthContext';
 import { PERMISSION_STRUCTURE, Permission, Role } from '../../../types';
 import Button from '../../ui/Button';
 import Modal from '../../ui/Modal';
+import InputField from '../../ui/InputField';
 
 type Scope = 'own' | 'team' | 'all';
 type Action = 'view' | 'edit' | 'delete';
@@ -149,7 +150,7 @@ const RolesList = () => {
                               onChange={(e) => handlePermissionToggle(role.id, permission, e.target.checked)}
                               disabled={role.id === 'admin'}
                             />
-                            <label htmlFor={`${role.id}-${permission}`} className="ms-2 text-sm text-gray-900 dark:text-gray-300">
+                            <label htmlFor={`${role.id}-${permission}`} className="ms-2 text-sm text-[rgb(var(--color-text-primary))]">
                               {t(transKey)}
                             </label>
                           </div>
@@ -160,8 +161,8 @@ const RolesList = () => {
 
                   {'modules' in group && (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm text-start text-gray-500 dark:text-gray-400">
-                        <thead className="text-xs text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800">
+                      <table className="w-full text-sm text-start text-[rgb(var(--color-text-secondary))]">
+                        <thead className="text-xs text-[rgb(var(--color-text-primary))] bg-[rgb(var(--color-muted))]">
                           <tr>
                             <th className="px-4 py-2 font-semibold">{t('module')}</th>
                             <th className="px-4 py-2 text-center font-semibold">{t('permission_action_view')}</th>
@@ -176,8 +177,8 @@ const RolesList = () => {
                             const otherActions = modDef.actions.filter(a => !['view', 'edit', 'delete', 'view_team', 'view_all', 'edit_team', 'edit_all', 'delete_team', 'delete_all'].includes(a));
                             
                             return (
-                              <tr key={modKey} className="bg-white border-b dark:bg-gray-900 dark:border-gray-800">
-                                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{t(modDef.title)}</td>
+                              <tr key={modKey} className="bg-[rgb(var(--color-surface))] border-b border-[rgb(var(--color-border))]">
+                                <td className="px-4 py-3 font-medium text-[rgb(var(--color-text-primary))]">{t(modDef.title)}</td>
                                 
                                 {(['view', 'edit', 'delete'] as Action[]).map(action => (
                                   <td key={action} className="px-4 py-3 text-center">
@@ -246,18 +247,13 @@ const RolesList = () => {
 
       <Modal isOpen={modalState.isOpen} onClose={handleCloseModal} title={modalState.mode === 'new' ? t('new_role') : t('edit_role')}>
         <div className="space-y-4">
-            <div>
-                <label htmlFor="roleName" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                    {t('name')}
-                </label>
-                <input
-                    id="roleName"
-                    type="text"
-                    value={modalState.name}
-                    onChange={(e) => setModalState(prev => ({ ...prev, name: e.target.value }))}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-                />
-            </div>
+            <InputField
+                label={t('name')}
+                id="roleName"
+                type="text"
+                value={modalState.name}
+                onChange={(e) => setModalState(prev => ({ ...prev, name: e.target.value }))}
+            />
             <div className="mt-6 flex justify-end space-x-2 rtl:space-x-reverse">
                 <Button variant="outline" onClick={handleCloseModal}>{t('cancel')}</Button>
                 <Button variant="primary" onClick={handleSaveRole}>

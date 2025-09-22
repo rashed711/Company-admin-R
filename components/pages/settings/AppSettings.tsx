@@ -1,46 +1,20 @@
-
 import React from 'react';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import { useTranslation } from '../../../services/localization';
 import { LocaleKey, DocumentTemplate, CompanyInfo } from '../../../types';
 import Button from '../../ui/Button';
+import InputField from '../../ui/InputField';
+import TextareaField from '../../ui/TextareaField';
 
 type TranslationKeys = ReturnType<typeof useTranslation>['t'];
 
 // A reusable component for a setting section
 const SettingsSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-xl font-bold mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">{title}</h2>
+    <div className="bg-[rgb(var(--color-surface))] p-6 rounded-lg shadow-md mb-8">
+        <h2 className="text-xl font-bold mb-4 border-b border-[rgb(var(--color-border))] pb-2">{title}</h2>
         <div className="space-y-4">
             {children}
         </div>
-    </div>
-);
-
-// A reusable input component
-const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-        </label>
-        <input
-            {...props}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-        />
-    </div>
-);
-
-// A reusable textarea component
-const TextareaField: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-        </label>
-        <textarea
-            {...props}
-            rows={4}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-        />
     </div>
 );
 
@@ -54,13 +28,13 @@ const ImageUploadField: React.FC<{
   const inputId = `image-upload-${label.replace(/\s+/g, '-')}`;
   return (
     <div>
-      <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+      <label className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
         {label}
       </label>
       <div className="flex items-center space-x-4 rtl:space-x-reverse">
         {imageUrl ? (
           <div className="relative">
-            <img src={imageUrl} alt="Header preview" className="h-20 w-auto rounded-lg border dark:border-gray-600" />
+            <img src={imageUrl} alt="Header preview" className="h-20 w-auto rounded-lg border border-[rgb(var(--color-border))]" />
             <button
               onClick={onImageRemove}
               className="absolute top-0 end-0 -mt-2 -me-2 bg-red-500 text-white rounded-full h-5 w-5 flex items-center justify-center text-sm"
@@ -70,7 +44,7 @@ const ImageUploadField: React.FC<{
             </button>
           </div>
         ) : (
-          <div className="h-20 w-40 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-400">
+          <div className="h-20 w-40 flex items-center justify-center bg-[rgb(var(--color-muted))] rounded-lg text-[rgb(var(--color-text-secondary))]">
             {t('no_image')}
           </div>
         )}
@@ -168,7 +142,7 @@ const AppSettings = () => {
             {Object.entries(companyInfo).map(([key, detail]) => {
                 const typedKey = key as keyof CompanyInfo;
                 return (
-                    <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end border-b dark:border-gray-700 pb-4 last:border-b-0">
+                    <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end border-b border-[rgb(var(--color-border))] pb-4 last:border-b-0">
                         <InputField 
                           label={t(companyInfoLabels[typedKey])}
                           name={key}
@@ -183,7 +157,7 @@ const AppSettings = () => {
                             onChange={(e) => handleCompanyInfoChange(typedKey, 'showInHeader', e.target.checked)}
                             className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                           />
-                          <label htmlFor={`show-${key}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+                          <label htmlFor={`show-${key}`} className="ms-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
                             {t('show_in_header')}
                           </label>
                         </div>
@@ -208,7 +182,7 @@ const AppSettings = () => {
               onChange={(e) => handleTemplateChange(e, setQuotationTemplate)}
               className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
-            <label htmlFor="showTitleQuotation" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+            <label htmlFor="showTitleQuotation" className="ms-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
               {t('show_document_title')}
             </label>
           </div>
@@ -233,7 +207,7 @@ const AppSettings = () => {
               onChange={(e) => handleTemplateChange(e, setSalesInvoiceTemplate)}
               className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
-            <label htmlFor="showTitleSalesInvoice" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+            <label htmlFor="showTitleSalesInvoice" className="ms-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
               {t('show_document_title')}
             </label>
           </div>
@@ -258,7 +232,7 @@ const AppSettings = () => {
               onChange={(e) => handleTemplateChange(e, setPurchaseInvoiceTemplate)}
               className="w-4 h-4 text-sky-600 bg-gray-100 border-gray-300 rounded focus:ring-sky-500 dark:focus:ring-sky-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
-            <label htmlFor="showTitlePurchaseInvoice" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+            <label htmlFor="showTitlePurchaseInvoice" className="ms-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
               {t('show_document_title')}
             </label>
           </div>
@@ -269,10 +243,10 @@ const AppSettings = () => {
         
         <SettingsSection title={t('regional_settings')}>
             <div>
-              <label htmlFor="locale-select" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+              <label htmlFor="locale-select" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">
                 {t('locale')}
               </label>
-              <select id="locale-select" value={localeKey} onChange={(e) => setLocaleKey(e.target.value as LocaleKey)} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500">
+              <select id="locale-select" value={localeKey} onChange={(e) => setLocaleKey(e.target.value as LocaleKey)} className="bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] text-[rgb(var(--color-text-primary))] text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5">
                 <option value="ar-SA">{t('ar-SA')}</option>
                 <option value="ar-EG">{t('ar-EG')}</option>
                 <option value="en-US">{t('en-US')}</option>

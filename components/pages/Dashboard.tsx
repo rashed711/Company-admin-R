@@ -1,15 +1,39 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import Card from '../ui/Card';
 import { SalesIcon, InvoiceIcon, CustomersIcon, SuppliersIcon, UserIcon } from '../icons/Icons';
 import { useTranslation } from '../../services/localization';
 import { useAppSettings } from '../../contexts/AppSettingsContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useThemeColors } from '../../hooks/useThemeColors';
+import { getDashboardCounts } from '../../services/api';
 
 const Dashboard = () => {
   const { config, companyInfo } = useAppSettings();
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
+  const colors = useThemeColors();
+  const [counts, setCounts] = useState({
+    quotations_count: 0,
+    invoices_count: 0,
+    customers_count: 0,
+    suppliers_count: 0,
+    users_count: 0,
+  });
+
+  useEffect(() => {
+      const fetchCounts = async () => {
+          const data = await getDashboardCounts();
+          setCounts({
+              quotations_count: data.quotations_count || 0,
+              invoices_count: data.invoices_count || 0,
+              customers_count: data.customers_count || 0,
+              suppliers_count: data.suppliers_count || 0,
+              users_count: data.users_count || 0,
+          });
+      };
+      fetchCounts();
+  }, []);
 
   // Mock data for the chart
   const salesData = [
@@ -30,11 +54,11 @@ const Dashboard = () => {
       
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        {showFinancials && <Card title={t('quotations_count')} value="3" icon={<SalesIcon />} />}
-        {showFinancials && <Card title={t('sales_invoices_count')} value="2" icon={<InvoiceIcon />} />}
-        <Card title={t('customer_count')} value="128" icon={<CustomersIcon />} />
-        <Card title={t('supplier_count')} value="42" icon={<SuppliersIcon />} />
-        {showUserStats && <Card title={t('users_count')} value="5" icon={<UserIcon />} />}
+        {showFinancials && <Card title={t('quotations_count')} value={String(counts.quotations_count)} icon={<SalesIcon />} />}
+        {showFinancials && <Card title={t('sales_invoices_count')} value={String(counts.invoices_count)} icon={<InvoiceIcon />} />}
+        <Card title={t('customer_count')} value={String(counts.customers_count)} icon={<CustomersIcon />} />
+        <Card title={t('supplier_count')} value={String(counts.suppliers_count)} icon={<SuppliersIcon />} />
+        {showUserStats && <Card title={t('users_count')} value={String(counts.users_count)} icon={<UserIcon />} />}
       </div>
 
       {/* Sales Chart */}
@@ -48,18 +72,19 @@ const Dashboard = () => {
                 margin={{ top: 20, right: 20, left: -10, bottom: 5 }}
                 layout="horizontal"
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(128, 128, 128, 0.2)" />
-                <XAxis dataKey="name" />
-                <YAxis reversed={config.dir === 'rtl'} orientation={config.dir === 'rtl' ? 'right' : 'left'}/>
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.border} />
+                <XAxis dataKey="name" tick={{ fill: colors.textSecondary }} />
+                <YAxis reversed={config.dir === 'rtl'} orientation={config.dir === 'rtl' ? 'right' : 'left'} tick={{ fill: colors.textSecondary }}/>
                 <Tooltip
                   contentStyle={{ 
-                      backgroundColor: 'rgba(30, 41, 59, 0.9)', 
-                      borderColor: 'rgb(51, 65, 85)',
-                      borderRadius: '0.75rem'
+                      backgroundColor: colors.surface, 
+                      borderColor: colors.border,
+                      borderRadius: '0.75rem',
+                      color: colors.textPrimary,
                   }}
                   cursor={{fill: 'rgba(128, 128, 128, 0.1)'}}
                 />
-                <Legend />
+                <Legend wrapperStyle={{ color: colors.textSecondary }} />
                 <Bar dataKey={t('sales')} fill="#38bdf8" radius={[4, 4, 0, 0]} />
                 <Bar dataKey={t('purchases')} fill="#f87171" radius={[4, 4, 0, 0]} />
               </BarChart>

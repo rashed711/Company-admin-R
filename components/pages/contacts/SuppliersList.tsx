@@ -1,18 +1,34 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Supplier } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
-import { mockSuppliersData } from '../../../services/mockData';
+import { getSuppliers } from '../../../services/api';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SuppliersList = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+        setIsLoading(true);
+        const { data, error } = await getSuppliers();
+        if (data) {
+            setSuppliers(data);
+        } else {
+            alert(error?.message);
+        }
+        setIsLoading(false);
+    };
+    fetchSuppliers();
+  }, []);
 
   const sortedData = useMemo(() => 
-    [...mockSuppliersData].sort((a, b) => a.name.localeCompare(b.name)),
-    []
+    [...suppliers].sort((a, b) => a.name.localeCompare(b.name)),
+    [suppliers]
   );
 
   const columns: { header: string; accessor: keyof Supplier; render?: (value: any) => React.ReactNode; }[] = [
@@ -32,7 +48,7 @@ const SuppliersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('suppliers')}</h1>
         <Button variant="primary">{t('new_supplier')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} />
+      <Table columns={columns} data={sortedData} onRowClick={handleRowClick} isLoading={isLoading}/>
     </div>
   );
 };

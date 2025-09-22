@@ -1,12 +1,18 @@
+
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { DashboardIcon, SalesIcon, InvoiceIcon, ContactsIcon, SettingsIcon, ChevronDownIcon, MenuIcon, XIcon, AccountingIcon, UserIcon } from '../icons/Icons';
+import { DashboardIcon, SalesIcon, InvoiceIcon, ContactsIcon, SettingsIcon, ChevronDownIcon, XIcon, AccountingIcon, UserIcon } from '../icons/Icons';
 import { useTranslation } from '../../services/localization';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAppSettings } from '../../contexts/AppSettingsContext';
 import { Permission } from '../../types';
 
-const Sidebar = () => {
+interface SidebarProps {
+    isSidebarOpen: boolean;
+    setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setSidebarOpen }) => {
   const { t } = useTranslation();
   const { hasPermission } = useAuth();
   const { companyInfo, config } = useAppSettings();
@@ -14,7 +20,6 @@ const Sidebar = () => {
   const [isInvoicesOpen, setInvoicesOpen] = useState(true);
   const [isContactsOpen, setContactsOpen] = useState(false);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const linkClasses = "flex items-center p-2.5 text-base font-medium text-[rgb(var(--color-text-secondary))] rounded-lg hover:bg-[rgb(var(--color-muted))] group relative";
   const activeLinkClasses = "bg-[rgba(var(--color-primary),0.1)] text-[rgb(var(--color-primary))]";
@@ -127,13 +132,6 @@ const Sidebar = () => {
   
   return (
     <>
-      <button 
-        className="lg:hidden fixed top-4 start-4 z-20 p-2"
-        onClick={() => setSidebarOpen(true)}
-      >
-        <MenuIcon/>
-      </button>
-
       {/* Overlay for mobile */}
       <div 
         className={`fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}

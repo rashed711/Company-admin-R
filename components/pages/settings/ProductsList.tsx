@@ -1,20 +1,42 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
 import { Product } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
-import { mockProductsData } from '../../../services/mockData';
 import Modal from '../../ui/Modal';
-
+import InputField from '../../ui/InputField';
+import TextareaField from '../../ui/TextareaField';
+import { getProducts, addProduct, updateProduct, deleteProduct } from '../../../services/api';
 
 const ProductsList = () => {
   const { config } = useAppSettings();
   const { t } = useTranslation();
   
-  const [products, setProducts] = useState<Product[]>(mockProductsData);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Partial<Product> | null>(null);
+
+  // Define options for dropdowns
+  const categoryOptions = ['Accessories', 'Air Outlets', 'Cable Tray'];
+  const unitOptions = ['No', 'Ton', 'kg', 'MT'];
+
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    const { data, error } = await getProducts();
+    if (data) {
+      setProducts(data);
+    } else if (error) {
+      console.error("Failed to fetch products:", error);
+      alert(`Error: ${error.message}`);
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const sortedData = useMemo(() => 
     [...products].sort((a, b) => a.name.localeCompare(b.name)), 
@@ -23,15 +45,11 @@ const ProductsList = () => {
 
   const handleAddNew = () => {
     setCurrentProduct({
-      id: Date.now(), // Temporary ID
-      name: '',
-      description: '',
-      category: '',
-      unit: '',
+      name: '', 
+      description: '', 
+      category: categoryOptions[0], // Set default category
+      unit: unitOptions[0], // Set default unit
       price: 0,
-      avg_purchase_price: 0,
-      avg_selling_price: 0,
-      created_at: new Date().toISOString(),
     });
     setIsModalOpen(true);
   };
@@ -46,22 +64,36 @@ const ProductsList = () => {
     setCurrentProduct(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!currentProduct) return;
     
-    // Check if it's a new product by checking if the id exists in the original list
-    const isNew = !products.some(p => p.id === currentProduct.id);
+    const isNew = !currentProduct.id;
     
     if (isNew) {
-      setProducts([...products, currentProduct as Product]);
+      const { error } = await addProduct(currentProduct);
+      if (error) return alert(error.message);
     } else {
-      setProducts(products.map(p => p.id === currentProduct.id ? (currentProduct as Product) : p));
+      const { id, created_at, avg_purchase_price, avg_selling_price, ...updateData } = currentProduct;
+      const { error } = await updateProduct(id!, updateData);
+      if (error) return alert(error.message);
     }
     
+    await fetchProducts();
     handleCloseModal();
   };
+
+  const handleDelete = async (productId: number) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+        const { error } = await deleteProduct(productId);
+        if (error) {
+            alert(`Error deleting product: ${error.message}`);
+        } else {
+            setProducts(products.filter(p => p.id !== productId));
+        }
+    }
+  };
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (!currentProduct) return;
     const { name, value } = e.target;
     setCurrentProduct({
@@ -76,9 +108,15 @@ const ProductsList = () => {
     { header: t('category'), accessor: 'category' },
     { header: t('unit'), accessor: 'unit' },
     { header: t('price'), accessor: 'price', render: (val: number) => `${val.toLocaleString()} ${config.currencySymbol}` },
-    { header: t('avg_purchase_price'), accessor: 'avg_purchase_price', render: (val: number) => `${val.toLocaleString()} ${config.currencySymbol}` },
-    { header: t('avg_selling_price'), accessor: 'avg_selling_price', render: (val: number) => `${val.toLocaleString()} ${config.currencySymbol}` },
+    { header: t('avg_purchase_price'), accessor: 'avg_purchase_price', render: (val: number) => `${val?.toLocaleString() || 0} ${config.currencySymbol}` },
+    { header: t('avg_selling_price'), accessor: 'avg_selling_price', render: (val: number) => `${val?.toLocaleString() || 0} ${config.currencySymbol}` },
   ];
+  
+   const actions = (row: Product) => (
+    <div className="flex space-x-2 rtl:space-x-reverse" onClick={(e) => e.stopPropagation()}>
+      <Button variant="danger" size="sm" onClick={() => handleDelete(row.id)}>{t('delete')}</Button>
+    </div>
+  );
 
   return (
     <div>
@@ -86,15 +124,42 @@ const ProductsList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('products_and_services')}</h1>
         <Button variant="primary" onClick={handleAddNew}>{t('new_product_service')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} onRowClick={handleEdit} />
+      <Table columns={columns} data={sortedData} onRowClick={handleEdit} isLoading={isLoading} actions={actions}/>
 
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={currentProduct && products.some(p => p.id === currentProduct.id) ? t('edit_product') : t('new_product')}>
+      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={currentProduct && currentProduct.id ? t('edit_product') : t('new_product')}>
         {currentProduct && (
           <div className="space-y-4">
             <InputField label={t('name')} name="name" value={currentProduct.name} onChange={handleInputChange} />
             <TextareaField label={t('description')} name="description" value={currentProduct.description} onChange={handleInputChange} />
-            <InputField label={t('category')} name="category" value={currentProduct.category} onChange={handleInputChange} />
-            <InputField label={t('unit')} name="unit" value={currentProduct.unit} onChange={handleInputChange} />
+            
+            {/* Category Dropdown */}
+            <div>
+                <label htmlFor="category-select" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('category')}</label>
+                <select
+                    id="category-select"
+                    name="category"
+                    value={currentProduct.category}
+                    onChange={handleInputChange}
+                    className="bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] text-[rgb(var(--color-text-primary))] text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5"
+                >
+                    {categoryOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                </select>
+            </div>
+
+            {/* Unit Dropdown */}
+            <div>
+                <label htmlFor="unit-select" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('unit')}</label>
+                <select
+                    id="unit-select"
+                    name="unit"
+                    value={currentProduct.unit}
+                    onChange={handleInputChange}
+                    className="bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] text-[rgb(var(--color-text-primary))] text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5"
+                >
+                    {unitOptions.map(option => <option key={option} value={option}>{option}</option>)}
+                </select>
+            </div>
+            
             <InputField label={t('price')} name="price" type="number" value={currentProduct.price} onChange={handleInputChange} />
             
             <div className="mt-6 flex justify-end space-x-2 rtl:space-x-reverse">
@@ -107,32 +172,5 @@ const ProductsList = () => {
     </div>
   );
 };
-
-// Reusable input components, can be moved to a separate file if needed
-const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-        </label>
-        <input
-            {...props}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-        />
-    </div>
-);
-
-const TextareaField: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-        </label>
-        <textarea
-            {...props}
-            rows={3}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-sky-500 dark:focus:border-sky-500"
-        />
-    </div>
-);
-
 
 export default ProductsList;

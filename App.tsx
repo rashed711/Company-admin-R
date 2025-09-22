@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+
+import React, { useEffect, useState } from 'react';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Dashboard from './components/pages/Dashboard';
 import QuotationsList from './components/pages/sales/QuotationsList';
@@ -33,20 +34,45 @@ import PaymentVoucherEdit from './components/pages/accounting/PaymentVoucherEdit
 import ProfilePage from './components/pages/ProfilePage';
 import ReceiptVoucherDetail from './components/pages/accounting/ReceiptVoucherDetail';
 import PaymentVoucherDetail from './components/pages/accounting/PaymentVoucherDetail';
+import PageTransitionLoader from './components/ui/PageTransitionLoader';
+import DbErrorPage from './components/pages/auth/DbErrorPage';
 
-// This component handles app-wide settings like language direction and contains the main routing logic.
-const AppRouter = () => {
+const AppContent = () => {
   const { config } = useAppSettings();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, dbError, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     document.documentElement.lang = config.language;
     document.documentElement.dir = config.dir;
   }, [config]);
 
+  useEffect(() => {
+    // This effect handles the page transition loader for in-app navigation.
+    // It is not triggered on the initial load because authLoading will be true.
+    if (authLoading) return;
+
+    setIsNavigating(true);
+    // Use a short timeout to allow the transition animation to be visible.
+    const timer = setTimeout(() => setIsNavigating(false), 250);
+
+    // Cleanup the timer if the component unmounts or path changes again quickly.
+    return () => clearTimeout(timer);
+  }, [location.pathname, authLoading]);
+
+
+  if (dbError) {
+    return <DbErrorPage />;
+  }
+
+  // The main loader is now shown if either the initial authentication is in progress
+  // OR if the user is navigating between pages. This creates a single, unified loading experience.
+  const showLoader = authLoading || isNavigating;
+
   return (
-    <HashRouter>
       <div className="bg-[rgb(var(--color-background))] text-[rgb(var(--color-text-primary))] min-h-screen">
+        {showLoader && <PageTransitionLoader />}
         {isAuthenticated ? (
           <MainLayout>
             <Routes>
@@ -87,12 +113,23 @@ const AppRouter = () => {
             </Routes>
           </MainLayout>
         ) : (
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="*" element={<Navigate to="/login" replace />} />
-          </Routes>
+          !authLoading && ( // Only render login page when authentication check is complete
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          )
         )}
       </div>
+  );
+};
+
+
+// This component handles app-wide settings like language direction and contains the main routing logic.
+const AppRouter = () => {
+  return (
+    <HashRouter>
+      <AppContent />
     </HashRouter>
   );
 };

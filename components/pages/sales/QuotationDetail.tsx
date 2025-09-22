@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DocumentViewer from '../../shared/DocumentViewer';
-import { mockQuotationsData } from '../../../services/mockData';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
@@ -10,16 +9,34 @@ import { supabase } from '../../../services/supabaseClient';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AmiriFont } from '../../../assets/AmiriFont';
+import { getQuotationById } from '../../../services/api';
 
 const QuotationDetail = () => {
     const { id } = useParams<{ id: string }>();
     const { t } = useTranslation();
-    const { config, companyInfo, quotationTemplate, taxRate } = useAppSettings();
+    const { config, companyInfo, quotationTemplate } = useAppSettings();
     const [loading, setLoading] = useState<string | null>(null);
+    const [quotationData, setQuotationData] = useState<Quotation | null>(null);
     const navigate = useNavigate();
-    
-    const quotationData = mockQuotationsData.find(q => q.id === parseInt(id || '0'));
 
+    useEffect(() => {
+        const fetchQuotation = async () => {
+            if (!id) return;
+            setLoading('fetch');
+            const { data, error } = await getQuotationById(parseInt(id));
+            if (data) {
+                // Supabase returns related tables with singular names.
+                // We need to map it to our component's expected structure.
+                setQuotationData({ ...data, customer_name: data.customer.name, items: data.items || [] });
+            } else {
+                alert(error?.message);
+                navigate('/quotations');
+            }
+            setLoading(null);
+        };
+        fetchQuotation();
+    }, [id, navigate]);
+    
     const handleConvertToInvoice = async (quotationId: number) => {
         setLoading('convert');
         try {
@@ -32,8 +49,7 @@ const QuotationDetail = () => {
           }
           
           alert(t('conversion_success', { id: quotationId, invoiceId: data }));
-          // Optional: navigate to the new invoice
-          // navigate(`/invoices/sales/${data}`);
+          navigate(`/invoices/sales/${data}`);
         } catch (error: any) {
           alert(`${t('conversion_error')}: ${error.message}`);
         } finally {
@@ -102,7 +118,6 @@ const QuotationDetail = () => {
         const col1X = isRTL ? 190 : 20;
         const col2X = isRTL ? 125 : 85;
         const col3X = isRTL ? 60 : 150;
-        // FIX: The 'Quotation' type does not have a 'company_name' property. Use 'customer_name' instead.
         doc.text(processText(`${t('company_name')}: ${quotation.customer_name || ''}`), col1X, infoY, { align });
         doc.text(processText(`${t('contact_person')}: ${quotation.contact_person || ''}`), col2X, infoY, { align });
         doc.text(processText(`${t('quotation_no')}: ${quotation.id}`), col3X, infoY, { align });
@@ -208,19 +223,20 @@ const QuotationDetail = () => {
     };
 
 
-    if (!quotationData) {
+    if (loading === 'fetch' || !quotationData) {
         return (
-            <div className="text-center p-8">
-                <h1 className="text-2xl font-bold mb-4">Quotation Not Found</h1>
-                <Button as={Link} to="/quotations" variant="primary">{t('back_to_list')}</Button>
+            <div className="flex justify-center items-center p-8">
+               <svg className="animate-spin h-8 w-8 text-[rgb(var(--color-primary))]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
         );
     }
     
     return (
         <div>
-            <div className="flex justify-between items-center mb-6 no-print">
-                <h1 className="text-3xl font-bold">{t('quotation_details')}</h1>
+            <div className="flex justify-end items-center mb-6 no-print">
                 <div className="flex flex-wrap gap-2">
                   <Button as={Link} to={`/quotations/${quotationData.id}/edit`} variant="outline">{t('edit')}</Button>
                   {!quotationData.invoice_id && (
@@ -238,7 +254,6 @@ const QuotationDetail = () => {
                   <Button variant="secondary" onClick={handleShare} disabled={!!loading}>
                       {loading === 'share' ? '...' : t('share')}
                   </Button>
-                  <Button as={Link} to="/quotations" variant="outline">{t('back_to_list')}</Button>
                 </div>
             </div>
             <DocumentViewer 

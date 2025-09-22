@@ -3,18 +3,18 @@
 import { LocaleKey, LocaleConfig, CompanyInfo } from './types';
 
 export const SUPABASE_CONFIG = {
-  URL: 'https://placeholder.supabase.co', // Replace with your Supabase project URL
-  ANON_KEY: 'ey-placeholder-anon-key', // Replace with your Supabase anon key
+  URL: 'https://glymmefvutzthumkmjaw.supabase.co', // Replace with your Supabase project URL
+  ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdseW1tZWZ2dXR6dGh1bWttamF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg0ODI0ODIsImV4cCI6MjA3NDA1ODQ4Mn0.Bekhbp6X2sATXoE-YNxQKS6Bxs6bQpIf_iZD8WPYdOE', // Replace with your Supabase anon key
 };
 
 // Renamed to DEFAULT_COMPANY_INFO to act as an initial value.
 // The app state will manage the editable company information.
 export const DEFAULT_COMPANY_INFO: CompanyInfo = {
-  APP_NAME: { value: 'إنجاز', showInHeader: false },
-  NAME: { value: 'Enjaz Contracting Co.', showInHeader: true },
-  NAME_AR: { value: 'شركة إنجاز للمقاولات', showInHeader: true },
-  EMAIL: { value: 'info@enjaz-app.com', showInHeader: true },
-  PHONE: { value: '+966 11 123 4567', showInHeader: true },
+  APP_NAME: { value: 'Company', showInHeader: false },
+  NAME: { value: 'Company TEC.', showInHeader: true },
+  NAME_AR: { value: 'Company For solution', showInHeader: true },
+  EMAIL: { value: 'info@Company-app.com', showInHeader: true },
+  PHONE: { value: '+966111234567', showInHeader: true },
   ADDRESS: { value: '1234 King Fahd Rd, Riyadh, Saudi Arabia', showInHeader: true },
   ADDRESS_AR: { value: '1234 شارع الملك فهد، الرياض، المملكة العربية السعودية', showInHeader: true },
   TAX_NUMBER: { value: '300123456700003', showInHeader: true }

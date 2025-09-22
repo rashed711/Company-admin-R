@@ -105,13 +105,11 @@ const CustomerStatementDetail = () => {
     
     return (
         <div>
-            <div className="flex flex-wrap justify-between items-center mb-6 no-print gap-2">
-                <h1 className="text-3xl font-bold">{t('account_statement')}</h1>
+            <div className="flex flex-wrap justify-end items-center mb-6 no-print gap-2">
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" onClick={() => generatePDF('save')}>{t('download_pdf')}</Button>
                   <Button variant="secondary" onClick={handleShare}>{t('share')}</Button>
                   <Button variant="secondary" onClick={() => window.print()}>{t('print_document')}</Button>
-                  <Button as={Link} to={`/contacts/customers/${customerId}/statement`} variant="outline">{t('back_to_list')}</Button>
                 </div>
             </div>
             <StatementViewer 

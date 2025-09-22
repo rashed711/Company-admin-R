@@ -1,27 +1,42 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ReceiptVoucher } from '../../../types';
 import Table from '../../ui/Table';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
-import { mockReceiptVouchersData } from '../../../services/mockData';
+import { getReceiptVouchers, deleteReceiptVoucher } from '../../../services/api';
 
 const ReceiptVouchersList = () => {
   const { config } = useAppSettings();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [vouchers, setVouchers] = useState<ReceiptVoucher[]>(mockReceiptVouchersData);
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const sortedData = useMemo(() =>
-    [...vouchers].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    [vouchers]
-  );
+  const fetchVouchers = async () => {
+    setIsLoading(true);
+    const { data, error } = await getReceiptVouchers();
+    if (data) {
+      setVouchers(data);
+    } else {
+      alert(error?.message);
+    }
+    setIsLoading(false);
+  };
 
-  const handleDelete = (id: number) => {
+  useEffect(() => {
+    fetchVouchers();
+  }, []);
+
+  const handleDelete = async (id: number) => {
     if (window.confirm('هل أنت متأكد من حذف هذا السند؟')) {
-      setVouchers(prevVouchers => prevVouchers.filter(v => v.id !== id));
-      // In a real app, you would also make an API call to delete the voucher from the database.
+      const { error } = await deleteReceiptVoucher(id);
+      if (error) {
+        alert(error.message);
+      } else {
+        setVouchers(prevVouchers => prevVouchers.filter(v => v.id !== id));
+      }
     }
   };
 
@@ -36,11 +51,11 @@ const ReceiptVouchersList = () => {
     </div>
   );
 
-  const columns: { header: string; accessor: keyof ReceiptVoucher; render?: (value: any) => React.ReactNode; }[] = [
+  const columns: { header: string; accessor: string; render?: (value: any, row: any) => React.ReactNode; }[] = [
     { header: 'ID', accessor: 'id' },
     { header: t('time'), accessor: 'created_time' },
     { header: t('date'), accessor: 'date' },
-    { header: t('customer'), accessor: 'customer_name' },
+    { header: t('customer'), accessor: 'customer', render: (val, row) => row.customer?.name || '-' },
     { header: t('amount'), accessor: 'amount', render: (val: number) => `${val.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${config.currencySymbol}` },
     { header: t('payment_method'), accessor: 'payment_method', render: (val: string) => t(val as any) },
     { header: t('description'), accessor: 'description' },
@@ -52,7 +67,7 @@ const ReceiptVouchersList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('receipt_vouchers')}</h1>
         <Button variant="primary">{t('new_receipt_voucher')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} actions={actions} onRowClick={handleRowClick} />
+      <Table columns={columns} data={vouchers} actions={actions} onRowClick={handleRowClick} isLoading={isLoading}/>
     </div>
   );
 };

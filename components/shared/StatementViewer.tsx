@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Customer, Supplier, AccountTransaction, CompanyInfo, LocaleConfig } from '../../types';
 import { useTranslation } from '../../services/localization';
@@ -27,9 +28,9 @@ const StatementViewer: React.FC<StatementViewerProps> = ({ entity, transactions,
 
 
   return (
-    <div className="bg-gray-200 dark:bg-gray-900 p-4 sm:p-8 rounded-lg">
-        <div id="print-area" className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-gray-900 dark:text-gray-200">
-            <header className="flex justify-between items-start mb-12 border-b dark:border-gray-700 pb-6">
+    <div className="bg-[rgb(var(--color-muted))] p-4 sm:p-8 rounded-lg">
+        <div id="print-area" className="bg-[rgb(var(--color-surface))] shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-[rgb(var(--color-text-primary))]">
+            <header className="flex justify-between items-start mb-12 border-b border-[rgb(var(--color-border))] pb-6">
                 <div className={`text-${isRTL ? 'right' : 'left'} space-y-1`}>
                     {companyHeaderDetails.map(({ key, label }) => {
                         const info = companyInfo[key];
@@ -49,7 +50,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({ entity, transactions,
                 </div>
             </header>
 
-            <section className="mb-8 p-4 border rounded-lg dark:border-gray-700">
+            <section className="mb-8 p-4 border rounded-lg border-[rgb(var(--color-border))]">
                  <h3 className="text-lg font-semibold">{statementTitle}</h3>
                  <p>{`${entityTypeLabel}: ${entity.name}`}</p>
                  <p>{`${t('email')}: ${entity.email}`}</p>
@@ -58,7 +59,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({ entity, transactions,
             
             <section>
                 <table className="w-full text-sm text-start">
-                    <thead className="bg-gray-100 dark:bg-gray-700">
+                    <thead className="bg-[rgb(var(--color-muted))]">
                         <tr>
                             <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('date')}</th>
                             <th className={`p-3 font-semibold text-${isRTL ? 'right' : 'left'}`}>{t('time')}</th>
@@ -70,7 +71,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({ entity, transactions,
                     </thead>
                     <tbody>
                         {[...transactions].reverse().map((tx) => (
-                             <tr key={tx.id} className="border-b dark:border-gray-700">
+                             <tr key={tx.id} className="border-b border-[rgb(var(--color-border))]">
                                 <td className="p-3">{tx.date}</td>
                                 <td className="p-3">{tx.time}</td>
                                 <td className="p-3">{tx.description}</td>
@@ -81,7 +82,7 @@ const StatementViewer: React.FC<StatementViewerProps> = ({ entity, transactions,
                         ))}
                     </tbody>
                     <tfoot>
-                        <tr className="font-bold bg-gray-50 dark:bg-gray-700">
+                        <tr className="font-bold bg-[rgb(var(--color-muted))]">
                             <td colSpan={5} className={`p-3 text-${isRTL ? 'right' : 'left'}`}>{t('total')}</td>
                             <td className={`p-3 text-${isRTL ? 'left' : 'right'}`}>{`${finalBalance.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}`}</td>
                         </tr>

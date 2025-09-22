@@ -1,5 +1,4 @@
-
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Invoice, CompanyInfo } from '../../../types';
 import Table from '../../ui/Table';
@@ -9,24 +8,51 @@ import autoTable from 'jspdf-autotable';
 import { AmiriFont } from '../../../assets/AmiriFont';
 import { useTranslation } from '../../../services/localization';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
-import { mockInvoicesData, mockUsersData } from '../../../services/mockData';
+import { getInvoices, deleteInvoice } from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
+
 
 const InvoicesList = () => {
   const { config, companyInfo, salesInvoiceTemplate } = useAppSettings();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const userMap = new Map(mockUsersData.map(user => [user.id, user.name]));
+  
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const sortedData = useMemo(() =>
-    [...mockInvoicesData].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
-    []
-  );
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      setIsLoading(true);
+      const { data, error } = await getInvoices();
+      if (data) {
+        setInvoices(data);
+      } else {
+        alert(error?.message);
+      }
+      setIsLoading(false);
+    };
+    fetchInvoices();
+  }, []);
+
+  const handleDelete = async (id: number) => {
+    if (window.confirm(t('delete_role_confirm'))) {
+        const { error } = await deleteInvoice(id);
+        if (error) {
+            alert(error.message);
+        } else {
+            setInvoices(prev => prev.filter(i => i.id !== id));
+        }
+    }
+  };
 
   const handleRowClick = (invoice: Invoice) => {
     navigate(`/invoices/sales/${invoice.id}`);
   };
 
   const generateInvoicePDF = (invoice: Invoice) => {
+    // This function remains largely the same, but you might need to fetch full invoice details
+    // if the list view doesn't contain all necessary info (like items).
+    // For now, assuming `invoice` object passed here is complete.
     const doc = new jsPDF();
     const isRTL = config.dir === 'rtl';
 
@@ -154,14 +180,14 @@ const InvoicesList = () => {
     doc.save(`invoice-${invoice.id}.pdf`);
   };
   
-  const columns: { header: string; accessor: string; render?: (value: any, row: Invoice) => React.ReactNode; }[] = [
+  const columns: { header: string; accessor: string; render?: (value: any, row: any) => React.ReactNode; }[] = [
     { header: t('invoice_no'), accessor: 'id' },
     { header: t('time'), accessor: 'created_time' },
     { header: t('date'), accessor: 'issue_date' },
-    { header: t('customer'), accessor: 'customer_name' },
+    { header: t('customer'), accessor: 'customer', render: (_val, row) => row.customer?.name || '-' },
     { header: t('contact_person'), accessor: 'contact_person' },
     { header: t('project_name'), accessor: 'project_name' },
-    { header: t('created_by'), accessor: 'created_by', render: (_val, row) => row.created_by ? userMap.get(row.created_by) || '-' : '-' },
+    { header: t('created_by'), accessor: 'created_by_user', render: (val) => val?.full_name || '-' },
     { header: t('total'), accessor: 'total', render: (val: number) => `${val.toLocaleString(undefined, {minimumFractionDigits: 2})} ${config.currencySymbol}` },
     { header: t('linked_document'), accessor: 'quotation_id', render: (_val, row) => row.quotation_id ? <Link to={`/quotations/${row.quotation_id}`} className="text-sky-600 hover:underline" onClick={e => e.stopPropagation()}>{`QUT-${row.quotation_id}`}</Link> : '-' },
   ];
@@ -169,6 +195,7 @@ const InvoicesList = () => {
   const actions = (row: Invoice) => (
     <div className="flex space-x-2 rtl:space-x-reverse" onClick={(e) => e.stopPropagation()}>
       <Button variant="secondary" size="sm" onClick={() => generateInvoicePDF(row)}>{t('download_pdf')}</Button>
+      <Button variant="danger" size="sm" onClick={() => handleDelete(row.id)}>{t('delete')}</Button>
     </div>
   );
 
@@ -178,7 +205,7 @@ const InvoicesList = () => {
         <h1 className="text-3xl font-bold text-[rgb(var(--color-text-primary))]">{t('sales_invoices')}</h1>
         <Button as={Link} to="/invoices/sales/new" variant="primary">{t('new_invoice')}</Button>
       </div>
-      <Table columns={columns} data={sortedData} actions={actions} onRowClick={handleRowClick} />
+      <Table columns={columns} data={invoices} actions={actions} onRowClick={handleRowClick} isLoading={isLoading} />
     </div>
   );
 };

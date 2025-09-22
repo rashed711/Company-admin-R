@@ -1,4 +1,3 @@
-
 import { useAppSettings } from '../contexts/AppSettingsContext';
 import { LocaleKey } from '../types';
 
@@ -149,6 +148,8 @@ type TranslationKeys = {
   new_role: string;
   edit_role: string;
   delete_role_confirm: string;
+  actions: string;
+  no_data_to_display: string;
 
   // Others
   product: string;
@@ -166,6 +167,10 @@ type TranslationKeys = {
   select_supplier: string;
   search: string;
   no_results_found: string;
+  toggle_theme_to_dark: string;
+  toggle_theme_to_light: string;
+  supabase_rate_limit_error: string;
+  login_error_invalid_credentials: string;
 
   // Statuses
   draft: string;
@@ -413,6 +418,12 @@ const arSATranslations: TranslationKeys = {
   new_role: 'دور جديد',
   edit_role: 'تعديل الدور',
   delete_role_confirm: 'هل أنت متأكد من حذف هذا الدور؟ لا يمكن التراجع عن هذا الإجراء.',
+  toggle_theme_to_dark: 'التحويل للوضع الليلي',
+  toggle_theme_to_light: 'التحويل للوضع النهاري',
+  actions: 'إجراءات',
+  no_data_to_display: 'لا توجد بيانات لعرضها.',
+  supabase_rate_limit_error: 'حدث خطأ أمني (تجاوز حد الطلبات). الرجاء الانتظار لحظة ثم المحاولة مرة أخرى.',
+  login_error_invalid_credentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
 };
 
 const arEGTranslations: TranslationKeys = {
@@ -558,6 +569,12 @@ const enUSTranslations: TranslationKeys = {
   new_role: 'New Role',
   edit_role: 'Edit Role',
   delete_role_confirm: 'Are you sure you want to delete this role? This action cannot be undone.',
+  toggle_theme_to_dark: 'Switch to dark mode',
+  toggle_theme_to_light: 'Switch to light mode',
+  actions: 'Actions',
+  no_data_to_display: 'No data to display.',
+  supabase_rate_limit_error: 'A security rate limit was exceeded. Please wait a moment and try again.',
+  login_error_invalid_credentials: 'Invalid email or password.',
 };
 
 const allTranslations: Record<LocaleKey, TranslationKeys> = {

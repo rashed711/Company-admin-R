@@ -1,8 +1,6 @@
-
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import DocumentViewer from '../../shared/DocumentViewer';
-import { mockInvoicesData } from '../../../services/mockData';
 import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import Button from '../../ui/Button';
 import { useTranslation } from '../../../services/localization';
@@ -10,14 +8,32 @@ import { Invoice, CompanyInfo } from '../../../types';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { AmiriFont } from '../../../assets/AmiriFont';
+import { getInvoiceById } from '../../../services/api';
 
 const InvoiceDetail = () => {
     const { id } = useParams<{ id: string }>();
     const { t } = useTranslation();
-    const { config, companyInfo, salesInvoiceTemplate, taxRate } = useAppSettings();
-    const [loading, setLoading] = useState(false);
+    const { config, companyInfo, salesInvoiceTemplate } = useAppSettings();
+    const [loading, setLoading] = useState<string | null>(null);
+    const [invoiceData, setInvoiceData] = useState<Invoice | null>(null);
+    const navigate = useNavigate();
 
-    const invoiceData = mockInvoicesData.find(q => q.id === parseInt(id || '0'));
+    useEffect(() => {
+        const fetchInvoice = async () => {
+            if (!id) return;
+            setLoading('fetch');
+            const { data, error } = await getInvoiceById(parseInt(id));
+            if (data) {
+                setInvoiceData({ ...data, customer_name: data.customer.name, items: data.items || [] });
+            } else {
+                alert(error?.message);
+                navigate('/invoices/sales');
+            }
+            setLoading(null);
+        };
+        fetchInvoice();
+    }, [id, navigate]);
+
 
     const generateInvoicePDF = (invoice: Invoice, outputType: 'save' | 'blob' = 'save'): Blob | void => {
         const doc = new jsPDF();
@@ -157,9 +173,9 @@ const InvoiceDetail = () => {
 
     const handleShare = async () => {
         if (!invoiceData) return;
-        setLoading(true);
+        setLoading('share');
         const pdfBlob = generateInvoicePDF(invoiceData, 'blob');
-        if (!pdfBlob) { setLoading(false); return; }
+        if (!pdfBlob) { setLoading(null); return; }
         const pdfFile = new File([pdfBlob], `invoice-${invoiceData.id}.pdf`, { type: 'application/pdf' });
         
         if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
@@ -175,29 +191,29 @@ const InvoiceDetail = () => {
         } else {
             alert('Web Share API for files is not supported in your browser.');
         }
-        setLoading(false);
+        setLoading(null);
     };
 
 
-    if (!invoiceData) {
+    if (loading === 'fetch' || !invoiceData) {
         return (
-            <div className="text-center p-8">
-                <h1 className="text-2xl font-bold mb-4">Invoice Not Found</h1>
-                <Button as={Link} to="/invoices/sales" variant="primary">{t('back_to_list')}</Button>
+            <div className="flex justify-center items-center p-8">
+               <svg className="animate-spin h-8 w-8 text-[rgb(var(--color-primary))]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
             </div>
         );
     }
     
     return (
         <div>
-            <div className="flex flex-wrap justify-between items-center mb-6 no-print gap-2">
-                <h1 className="text-3xl font-bold">{t('invoice_details')}</h1>
+            <div className="flex flex-wrap justify-end items-center mb-6 no-print gap-2">
                 <div className="flex flex-wrap gap-2">
                   <Button as={Link} to={`/invoices/sales/${invoiceData.id}/edit`} variant="outline">{t('edit')}</Button>
-                  <Button variant="secondary" onClick={() => generateInvoicePDF(invoiceData)} disabled={loading}>{t('download_pdf')}</Button>
-                  <Button variant="secondary" onClick={handleShare} disabled={loading}>{t('share')}</Button>
+                  <Button variant="secondary" onClick={() => generateInvoicePDF(invoiceData)} disabled={!!loading}>{t('download_pdf')}</Button>
+                  <Button variant="secondary" onClick={handleShare} disabled={!!loading}>{loading === 'share' ? '...' : t('share')}</Button>
                   <Button variant="secondary" onClick={() => window.print()}>{t('print_document')}</Button>
-                  <Button as={Link} to="/invoices/sales" variant="outline">{t('back_to_list')}</Button>
                 </div>
             </div>
             <DocumentViewer 

@@ -5,18 +5,7 @@ import Button from '../../ui/Button';
 import { ReceiptVoucher } from '../../../types';
 import { mockReceiptVouchersData, mockCustomersData } from '../../../services/mockData';
 import SearchableSelect from '../../ui/SearchableSelect';
-
-const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            {label}
-        </label>
-        <input
-            {...props}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-        />
-    </div>
-);
+import InputField from '../../ui/InputField';
 
 const ReceiptVoucherEdit = () => {
     const { id } = useParams<{ id: string }>();
@@ -80,10 +69,10 @@ const ReceiptVoucherEdit = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md space-y-6 max-w-4xl mx-auto">
+            <div className="bg-[rgb(var(--color-surface))] p-6 rounded-lg shadow-md space-y-6 max-w-4xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                      <div>
-                        <label htmlFor="customer_id" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('customer')}</label>
+                        <label htmlFor="customer_id" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('customer')}</label>
                         <SearchableSelect
                             options={customerOptions}
                             value={voucher.customer_id?.toString() || ''}
@@ -94,16 +83,16 @@ const ReceiptVoucherEdit = () => {
                     <InputField label={t('date')} name="date" type="date" value={voucher.date} onChange={handleChange} />
                     <InputField label={t('amount')} name="amount" type="number" value={voucher.amount} onChange={handleChange} />
                     <div>
-                        <label htmlFor="payment_method" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('payment_method')}</label>
-                        <select id="payment_method" name="payment_method" value={voucher.payment_method} onChange={handleChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600">
+                        <label htmlFor="payment_method" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('payment_method')}</label>
+                        <select id="payment_method" name="payment_method" value={voucher.payment_method} onChange={handleChange} className="bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] text-[rgb(var(--color-text-primary))] text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5">
                             <option value="cash">{t('cash')}</option>
                             <option value="bank_transfer">{t('bank_transfer')}</option>
                             <option value="cheque">{t('cheque')}</option>
                         </select>
                     </div>
                     <div className="md:col-span-2">
-                         <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">{t('description')}</label>
-                         <textarea id="description" name="description" value={voucher.description} onChange={handleChange} rows={4} className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600"/>
+                         <label htmlFor="description" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('description')}</label>
+                         <textarea id="description" name="description" value={voucher.description} onChange={handleChange} rows={4} className="bg-[rgb(var(--color-surface))] border border-[rgb(var(--color-border))] text-[rgb(var(--color-text-primary))] text-sm rounded-lg focus:ring-sky-500 focus:border-sky-500 block w-full p-2.5"/>
                     </div>
                 </div>
             </div>

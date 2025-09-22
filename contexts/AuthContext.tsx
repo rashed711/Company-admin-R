@@ -1,6 +1,8 @@
 
+
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User, Role, Permission, ALL_PERMISSIONS } from '../types';
+import { supabase } from '../services/supabaseClient';
 
 // Define available roles and their permissions
 export const ROLES: Record<'admin' | 'accountant' | 'sales_manager' | 'sales_person', Role> = {
@@ -54,76 +56,171 @@ export const ROLES: Record<'admin' | 'accountant' | 'sales_manager' | 'sales_per
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  loading: boolean;
+  dbError: string | null;
+  clearDbError: () => void;
   hasPermission: (permission: string) => boolean;
-  login: (email: string, pass: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
+  signUp: (email: string, password: string, fullName: string, roleId: string, managerId: string | null) => Promise<{ user?: User; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// In a real app, you would fetch the user from an authentication service.
-// For demonstration, we'll mock a logged-in user.
-const MOCKED_ADMIN_USER: User = {
-    id: 1,
-    name: 'مدير النظام',
-    email: 'admin@enjaz.app',
-    role: ROLES.admin,
-};
-
-const USER_STORAGE_KEY = 'enjaz-user';
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const item = window.localStorage.getItem(USER_STORAGE_KEY);
-      return item ? JSON.parse(item) : null;
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState<string | null>(null);
   
   const isAuthenticated = !!user;
 
+  const clearDbError = () => setDbError(null);
+  
+  const fetchUserProfile = async (authUserId: string, authUserEmail: string | undefined): Promise<User | null> => {
+      if (!authUserEmail) {
+          console.error("Auth user email is missing.");
+          return null;
+      }
+      
+      const { data: profile, error } = await supabase
+          .from('users')
+          .select('id, full_name, role, manager_id')
+          .eq('id', authUserId)
+          .maybeSingle();
+
+      if (error) {
+          if (error.message.includes('infinite recursion')) {
+              setDbError('RECURSION_ERROR');
+          }
+          console.error('Error fetching user profile:', error.message);
+          await supabase.auth.signOut();
+          return null;
+      }
+
+      if (!profile) {
+          console.error(`User profile not found for auth user ID ${authUserId}. Signing out.`);
+          await supabase.auth.signOut();
+          return null;
+      }
+
+      const userRole = Object.values(ROLES).find(r => r.id === profile.role);
+      if (!userRole) {
+          console.error('Invalid role found for user:', profile.role);
+          await supabase.auth.signOut();
+          return null;
+      }
+
+      return {
+          id: profile.id,
+          name: profile.full_name,
+          email: authUserEmail,
+          role: userRole,
+          manager_id: profile.manager_id,
+      };
+  };
+
+  useEffect(() => {
+    // Set loading to true when the provider mounts to block rendering until auth is resolved.
+    setLoading(true);
+
+    // Use onAuthStateChange as the single source of truth for the session.
+    // It fires immediately with the current session status.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (session?.user) {
+            const userProfile = await fetchUserProfile(session.user.id, session.user.email);
+            setUser(userProfile);
+        } else {
+            setUser(null);
+        }
+        
+        // CRITICAL: Set loading to false only after the entire auth flow (session check + profile fetch) is complete.
+        // This ensures the main app content doesn't render prematurely and eliminates race conditions.
+        setLoading(false);
+    });
+
+    // Cleanup subscription on component unmount.
+    return () => {
+        subscription.unsubscribe();
+    };
+  }, []);
+
+
   const hasPermission = (permission: string): boolean => {
     if (!user) return false;
-    // Admin role bypasses the check and always has permission.
     if (user.role.id === 'admin') {
       return true;
     }
-    // Check for an exact match or if the user has a more privileged version of the permission.
-    // e.g., if checking for 'sales:invoices:view', and user has 'sales:invoices:view_all', it should return true.
     return user.role.permissions.some(p => p.startsWith(permission));
   };
 
-  const login = async (email: string, pass: string): Promise<boolean> => {
-    // Mock API call
-    return new Promise(resolve => {
-        setTimeout(() => {
-            if (email === 'admin@enjaz.app' && pass === 'password') {
-                const loggedInUser = MOCKED_ADMIN_USER;
-                localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(loggedInUser));
-                setUser(loggedInUser);
-                resolve(true);
-            } else {
-                resolve(false);
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+        return { success: false, error: error.message };
+    }
+    // On success, the onAuthStateChange listener will automatically handle updating the user state.
+    return { success: true };
+  };
+  
+  const signUp = async (email: string, password: string, fullName: string, roleId: string, managerId: string | null): Promise<{ user?: User; error?: string }> => {
+    const { data: { user: authUser }, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: fullName,
             }
-        }, 500);
+        }
     });
+
+    if (signUpError) {
+        return { error: signUpError.message };
+    }
+    if (!authUser) {
+        return { error: 'Signup failed to return a user.' };
+    }
+
+    const { error: updateError } = await supabase
+        .from('users')
+        .update({ role: roleId, manager_id: managerId })
+        .eq('id', authUser.id);
+    
+    if (updateError) {
+        return { error: `User account was created, but failed to set profile details: ${updateError.message}` };
+    }
+
+    const role = Object.values(ROLES).find(r => r.id === roleId);
+    if (!role) {
+        return { error: 'Internal error: An invalid role was specified.' };
+    }
+
+    const newUser: User = {
+        id: authUser.id,
+        name: fullName,
+        email: authUser.email!,
+        role,
+        manager_id: managerId,
+    };
+
+    return { user: newUser };
   };
 
-  const logout = () => {
-    localStorage.removeItem(USER_STORAGE_KEY);
+
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
   };
-
 
   const value = {
     user,
     isAuthenticated,
+    loading,
+    dbError,
+    clearDbError,
     hasPermission,
     login,
     logout,
+    signUp,
   };
 
   return (

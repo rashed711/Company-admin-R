@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useTranslation } from '../../../services/localization';
@@ -80,19 +81,17 @@ const PaymentVoucherDetail = () => {
     
     return (
         <div>
-            <div className="flex flex-wrap justify-between items-center mb-6 no-print gap-2">
-                <h1 className="text-3xl font-bold">تفاصيل سند الصرف</h1>
+            <div className="flex flex-wrap justify-end items-center mb-6 no-print gap-2">
                 <div className="flex flex-wrap gap-2">
                     <Button as={Link} to={`/accounting/payment-vouchers/${voucher.id}/edit`} variant="outline">{t('edit')}</Button>
                     <Button variant="secondary" onClick={() => generatePDF(voucher)}>{t('download_pdf')}</Button>
                     <Button variant="secondary" onClick={() => window.print()}>{t('print_document')}</Button>
-                    <Button as={Link} to="/accounting/payment-vouchers" variant="outline">{t('back_to_list')}</Button>
                 </div>
             </div>
             
-             <div className="bg-gray-200 dark:bg-gray-900 p-4 sm:p-8 rounded-lg">
-                <div id="print-area" className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-gray-900 dark:text-gray-200">
-                     <header className="flex justify-between items-start mb-8 border-b dark:border-gray-700 pb-4">
+             <div className="bg-[rgb(var(--color-muted))] p-4 sm:p-8 rounded-lg">
+                <div id="print-area" className="bg-[rgb(var(--color-surface))] shadow-lg rounded-lg p-8 md:p-12 max-w-4xl mx-auto text-[rgb(var(--color-text-primary))]">
+                     <header className="flex justify-between items-start mb-8 border-b border-[rgb(var(--color-border))] pb-4">
                         <div className={`text-${isRTL ? 'right' : 'left'} space-y-1`}>
                             <h1 className="text-2xl font-bold text-sky-600 dark:text-sky-400">{isRTL ? companyInfo.NAME_AR.value : companyInfo.NAME.value}</h1>
                             <p className="text-sm">{isRTL ? companyInfo.ADDRESS_AR.value : companyInfo.ADDRESS.value}</p>
@@ -114,7 +113,7 @@ const PaymentVoucherDetail = () => {
                         </div>
                     </section>
                     
-                    <section className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 my-8 space-y-4">
+                    <section className="bg-[rgb(var(--color-muted))] rounded-lg p-6 my-8 space-y-4">
                          <div className="grid grid-cols-2 gap-4">
                             <div className="font-semibold">{t('amount')}:</div>
                             <div>{voucher.amount.toLocaleString(undefined, {minimumFractionDigits: 2})} {config.currencySymbol}</div>
@@ -127,7 +126,7 @@ const PaymentVoucherDetail = () => {
                          </div>
                     </section>
 
-                    <footer className="mt-20 pt-8 text-sm text-center text-gray-600 dark:text-gray-400">
+                    <footer className="mt-20 pt-8 text-sm text-center text-[rgb(var(--color-text-secondary))]">
                          <div className="flex justify-around">
                             <div>
                                 <p className="mb-8">____________________</p>

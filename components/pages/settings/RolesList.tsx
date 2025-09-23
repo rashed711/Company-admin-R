@@ -116,7 +116,8 @@ const RolesList = () => {
       </div>
       
       <div className="space-y-8">
-        {Object.values(roles).map(role => (
+        {/* FIX: Explicitly typed the 'role' variable in the map function. */}
+        {Object.values(roles).map((role: Role) => (
           <div key={role.id} className="bg-[rgb(var(--color-surface))] p-6 rounded-xl shadow-sm">
             <div className="flex justify-between items-center border-b border-[rgb(var(--color-border))] pb-4 mb-6">
               <div className="flex items-center gap-4">

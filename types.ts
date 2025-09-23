@@ -1,4 +1,5 @@
 
+
 export type LocaleKey = 'ar-SA' | 'ar-EG' | 'en-US';
 
 export interface LocaleConfig {
@@ -245,8 +246,9 @@ export interface Invoice extends DocumentShared {
 }
 
 export interface Quotation extends DocumentShared {
-    customer_id: number;
+    customer_id?: number;
     customer_name?: string;
+    customer_name_temp?: string;
     status: 'draft' | 'sent' | 'accepted' | 'rejected';
     contact_person?: string;
     project_name?: string;

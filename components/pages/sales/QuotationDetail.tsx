@@ -25,9 +25,7 @@ const QuotationDetail = () => {
             setLoading('fetch');
             const { data, error } = await getQuotationById(parseInt(id));
             if (data) {
-                // Supabase returns related tables with singular names.
-                // We need to map it to our component's expected structure.
-                setQuotationData({ ...data, customer_name: data.customer.name, items: data.items || [] });
+                setQuotationData({ ...data, customer_name: data.customer?.name || data.customer_name_temp, items: data.items || [] });
             } else {
                 alert(error?.message);
                 navigate('/quotations');

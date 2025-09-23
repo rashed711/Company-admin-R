@@ -1,4 +1,5 @@
 
+
 import { supabase } from './supabaseClient';
 import { Product, Quotation, Invoice, SupplierInvoice, Customer, Supplier, ReceiptVoucher, PaymentVoucher, InvoiceItem, JournalEntry, JournalEntryItem } from '../types';
 
@@ -16,13 +17,21 @@ const deleteProduct = (id: number) => supabase.from('products').delete().eq('id'
 
 // Customers
 const getCustomers = () => fetchData('customers');
+const addCustomer = (customer: Partial<Customer>) => supabase.from('customers').insert([customer]).select();
+const updateCustomer = (id: number, updates: Partial<Customer>) => supabase.from('customers').update(updates).eq('id', id).select();
+const deleteCustomer = (id: number) => supabase.from('customers').delete().eq('id', id);
+
 
 // Suppliers
 const getSuppliers = () => fetchData('suppliers');
+const addSupplier = (supplier: Partial<Supplier>) => supabase.from('suppliers').insert([supplier]).select();
+const updateSupplier = (id: number, updates: Partial<Supplier>) => supabase.from('suppliers').update(updates).eq('id', id).select();
+const deleteSupplier = (id: number) => supabase.from('suppliers').delete().eq('id', id);
+
 
 // --- QUOTATIONS ---
-const getQuotations = () => supabase.from('quotations').select('*, customer:customers(name), created_by_user:created_by(full_name)').order('created_at', { ascending: false });
-const getQuotationById = (id: number) => supabase.from('quotations').select('*, items:quotation_items(*), customer:customers(*)').eq('id', id).single();
+const getQuotations = () => supabase.from('quotations').select('*, customer:customers(name), created_by_user:created_by(full_name), customer_name_temp').order('created_at', { ascending: false });
+const getQuotationById = (id: number) => supabase.from('quotations').select('*, items:quotation_items(*), customer:customers(*), customer_name_temp').eq('id', id).single();
 const addQuotation = (quotation: Partial<Quotation>) => {
     const { items, ...quotationData } = quotation;
     const itemsData = items?.map(({ id, product_name, ...rest }) => rest);
@@ -120,7 +129,13 @@ export {
     updateProduct,
     deleteProduct,
     getCustomers,
+    addCustomer,
+    updateCustomer,
+    deleteCustomer,
     getSuppliers,
+    addSupplier,
+    updateSupplier,
+    deleteSupplier,
     getQuotations,
     getQuotationById,
     addQuotation,

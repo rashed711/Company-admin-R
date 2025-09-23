@@ -1,3 +1,5 @@
+
+
 import { useAppSettings } from '../contexts/AppSettingsContext';
 import { LocaleKey } from '../types';
 
@@ -111,7 +113,9 @@ type TranslationKeys = {
   new_invoice: string;
   new_supplier_invoice: string;
   new_customer: string;
+  edit_customer: string;
   new_supplier: string;
+  edit_supplier: string;
   new_product_service: string;
   new_receipt_voucher: string;
   new_payment_voucher: string;
@@ -164,6 +168,7 @@ type TranslationKeys = {
   password: string;
   select_product: string;
   select_customer: string;
+  select_or_create_customer: string;
   select_supplier: string;
   search: string;
   no_results_found: string;
@@ -291,7 +296,8 @@ const arSATranslations: TranslationKeys = {
   sales_and_purchases_overview: 'نظرة عامة على المبيعات والمشتريات', quotation_no: 'رقم العرض',
   customer: 'الشركة', expiry_date: 'تاريخ الانتهاء', invoice_no: 'رقم الفاتورة', supplier: 'المورد',
   new_quotation: 'إنشاء عرض سعر جديد', new_invoice: 'إنشاء فاتورة جديدة', new_supplier_invoice: 'إضافة فاتورة جديدة',
-  new_customer: 'إضافة شركة جديدة', new_supplier: 'إضافة مورد جديد', new_product_service: 'إضافة منتج/خدمة',
+  new_customer: 'إضافة شركة جديدة', edit_customer: 'تعديل بيانات الشركة', new_supplier: 'إضافة مورد جديد', edit_supplier: 'تعديل بيانات المورد',
+  new_product_service: 'إضافة منتج/خدمة',
   product: 'منتج', service: 'خدمة', invoices_menu: 'الفواتير', sales_invoices: 'فواتير المبيعات',
   app_settings: 'إعدادات التطبيق', locale: 'اللغة والمنطقة', tax_rate: 'نسبة الضريبة', 'ar-SA': 'العربية - السعودية',
   'ar-EG': 'العربية - مصر', 'en-US': 'الإنجليزية - الولايات المتحدة', save_changes: 'حفظ التغييرات',
@@ -402,6 +408,7 @@ const arSATranslations: TranslationKeys = {
   product_name: 'اسم المنتج',
   select_product: 'اختر منتجاً',
   select_customer: 'اختر شركة',
+  select_or_create_customer: 'اختر أو أنشئ شركة',
   select_supplier: 'اختر مورداً',
   search: 'ابحث',
   no_results_found: 'لم يتم العثور على نتائج',
@@ -429,6 +436,7 @@ const arSATranslations: TranslationKeys = {
 const arEGTranslations: TranslationKeys = {
   ...arSATranslations,
   phone: 'التليفون',
+  edit_supplier: 'تعديل بيانات المورد',
 };
 
 const enUSTranslations: TranslationKeys = {
@@ -442,7 +450,8 @@ const enUSTranslations: TranslationKeys = {
   sales_and_purchases_overview: 'Sales & Purchases Overview', quotation_no: 'Quotation #',
   customer: 'Customer', expiry_date: 'Expiry Date', invoice_no: 'Invoice #', supplier: 'Supplier',
   new_quotation: 'New Quotation', new_invoice: 'New Invoice', new_supplier_invoice: 'New Supplier Invoice',
-  new_customer: 'New Customer', new_supplier: 'New Supplier', new_product_service: 'New Product/Service',
+  new_customer: 'New Customer', edit_customer: 'Edit Customer', new_supplier: 'New Supplier', edit_supplier: 'Edit Supplier',
+  new_product_service: 'New Product/Service',
   product: 'Product', service: 'Service', invoices_menu: 'Invoices', sales_invoices: 'Sales Invoices',
   app_settings: 'App Settings', locale: 'Language & Region', tax_rate: 'Tax Rate', 'ar-SA': 'Arabic - Saudi Arabia',
   'ar-EG': 'Arabic - Egypt', 'en-US': 'English - United States', save_changes: 'Save Changes',
@@ -553,6 +562,7 @@ const enUSTranslations: TranslationKeys = {
   product_name: 'Product Name',
   select_product: 'Select a product',
   select_customer: 'Select a customer',
+  select_or_create_customer: 'Select or create a customer',
   select_supplier: 'Select a supplier',
   search: 'Search',
   no_results_found: 'No results found',

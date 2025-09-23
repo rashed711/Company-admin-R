@@ -5,10 +5,12 @@ import { useAppSettings } from '../../../contexts/AppSettingsContext';
 import { useTranslation } from '../../../services/localization';
 import Button from '../../ui/Button';
 import { XIcon } from '../../icons/Icons';
-import SearchableSelect from '../../ui/SearchableSelect';
 import { LOCALES_CONFIG } from '../../../config';
 import InputField from '../../ui/InputField';
 import { getQuotationById, addQuotation, updateQuotation, getProducts, getCustomers } from '../../../services/api';
+import CreatableSearchableSelect from '../../ui/CreatableSearchableSelect';
+// FIX: Import the SearchableSelect component to resolve the "Cannot find name" error.
+import SearchableSelect from '../../ui/SearchableSelect';
 
 const QuotationEdit = () => {
     const { id } = useParams<{ id: string }>();
@@ -23,6 +25,7 @@ const QuotationEdit = () => {
     const [selectedLocaleKey, setSelectedLocaleKey] = useState<LocaleKey>(globalLocaleKey);
     const [products, setProducts] = useState<Product[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
+    const [tempCustomerName, setTempCustomerName] = useState('');
 
     const customerOptions = useMemo(() => customers.map(c => ({ value: c.id.toString(), label: c.name })), [customers]);
     const productOptions = useMemo(() => products.map(p => ({ value: p.id.toString(), label: p.name })), [products]);
@@ -53,6 +56,7 @@ const QuotationEdit = () => {
                 const { data, error } = await getQuotationById(quotationId);
                 if (data) {
                     setQuotation({ ...data, items: data.items || [] });
+                    if(data.customer_name_temp) setTempCustomerName(data.customer_name_temp);
                     const matchingLocale = Object.keys(LOCALES_CONFIG).find(key => 
                         LOCALES_CONFIG[key as LocaleKey].taxRate === data.tax_rate
                     ) as LocaleKey | undefined;
@@ -85,12 +89,30 @@ const QuotationEdit = () => {
         const { name, value, type } = e.target;
         if (quotation) {
             let val: string | number | boolean = value;
-            if (name === 'customer_id') val = parseInt(value);
             if (type === 'number') val = parseFloat(value) || 0;
             if (type === 'checkbox') val = (e.target as HTMLInputElement).checked;
             setQuotation({ ...quotation, [name]: val });
         }
     };
+    
+    const handleCustomerSelect = (customerId: string) => {
+        setQuotation(q => ({ ...q, customer_id: parseInt(customerId), customer_name_temp: undefined }));
+        setTempCustomerName('');
+    };
+
+    const handleCustomerCreate = (customerName: string) => {
+        setQuotation(q => ({ ...q, customer_id: undefined, customer_name_temp: customerName }));
+        setTempCustomerName(customerName);
+    };
+
+    const customerDisplayValue = useMemo(() => {
+        if (tempCustomerName) return tempCustomerName;
+        if (quotation?.customer_id) {
+            return customers.find(c => c.id === quotation.customer_id)?.name || '';
+        }
+        return '';
+    }, [tempCustomerName, quotation?.customer_id, customers]);
+
 
     const handleLocaleChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const newLocaleKey = e.target.value as LocaleKey;
@@ -152,8 +174,8 @@ const QuotationEdit = () => {
     };
 
     const handleSave = async () => {
-        if (!quotation || !quotation.customer_id) {
-            alert("Please select a customer.");
+        if (!quotation || (!quotation.customer_id && !quotation.customer_name_temp)) {
+            alert("Please select or create a customer.");
             return;
         }
         setIsSaving(true);
@@ -192,11 +214,13 @@ const QuotationEdit = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <label htmlFor="customer_id" className="block mb-2 text-sm font-medium text-[rgb(var(--color-text-primary))]">{t('customer')}</label>
-                        <SearchableSelect
+                        <CreatableSearchableSelect
                             options={customerOptions}
                             value={quotation.customer_id?.toString() || ''}
-                            onChange={(value) => handleMainDocChange({ target: { name: 'customer_id', value } } as ChangeEvent<HTMLSelectElement>)}
-                            placeholder={t('select_customer')}
+                            displayValue={customerDisplayValue}
+                            onChange={handleCustomerSelect}
+                            onCreate={handleCustomerCreate}
+                            placeholder={t('select_or_create_customer')}
                         />
                     </div>
                     <InputField label={t('contact_person')} name="contact_person" value={quotation.contact_person} onChange={handleMainDocChange} />

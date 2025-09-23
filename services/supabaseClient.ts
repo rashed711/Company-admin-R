@@ -1,5 +1,6 @@
 
 
+
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG } from '../config';
 
@@ -17,16 +18,117 @@ export const supabase = createClient(SUPABASE_CONFIG.URL, SUPABASE_CONFIG.ANON_K
 
 
 /*
--- This script fixes the database security configuration.
+-- SCRIPT VERSION: 2
+-- This script adds the ability to create quotations for customers not yet in your database.
 -- Run this ENTIRE script in your Supabase SQL Editor. It is safe to run multiple times.
+
+-- 1. Add a temporary name column to quotations.
+-- This column will store the name of a customer who doesn't exist in the 'customers' table yet.
+ALTER TABLE public.quotations ADD COLUMN IF NOT EXISTS customer_name_temp TEXT;
+
+
+-- 2. Update the function that creates quotations.
+-- This change allows the function to accept either an existing customer ID or a new temporary customer name.
+CREATE OR REPLACE FUNCTION public.create_quotation_with_items(quotation_data JSONB, items_data JSONB)
+RETURNS BIGINT AS $$
+DECLARE
+    new_quotation_id BIGINT;
+    item JSONB;
+BEGIN
+    INSERT INTO public.quotations (customer_id, customer_name_temp, issue_date, status, subtotal, tax_rate, tax_amount, total, created_by, is_taxable, discount_amount, discount_type, contact_person, project_name, quotation_type)
+    VALUES (
+        (quotation_data->>'customer_id')::BIGINT, quotation_data->>'customer_name_temp', (quotation_data->>'issue_date')::DATE, (quotation_data->>'status')::public.document_status,
+        (quotation_data->>'subtotal')::NUMERIC, (quotation_data->>'tax_rate')::NUMERIC, (quotation_data->>'tax_amount')::NUMERIC, (quotation_data->>'total')::NUMERIC,
+        auth.uid(), (quotation_data->>'is_taxable')::BOOLEAN, (quotation_data->>'discount_amount')::NUMERIC, (quotation_data->>'discount_type')::TEXT,
+        quotation_data->>'contact_person', quotation_data->>'project_name', quotation_data->>'quotation_type'
+    ) RETURNING id INTO new_quotation_id;
+
+    IF items_data IS NOT NULL THEN
+        FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
+            INSERT INTO public.quotation_items (quotation_id, product_id, description, unit, quantity, price)
+            VALUES (new_quotation_id, (item->>'product_id')::BIGINT, item->>'description', item->>'unit', (item->>'quantity')::INT, (item->>'price')::NUMERIC);
+        END LOOP;
+    END IF;
+    RETURN new_quotation_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 3. Update the function that updates quotations.
+-- This adds the same logic for handling temporary customer names during updates.
+CREATE OR REPLACE FUNCTION public.update_quotation_with_items(p_quotation_id BIGINT, quotation_data JSONB, items_data JSONB)
+RETURNS VOID AS $$
+DECLARE
+    item JSONB;
+BEGIN
+    UPDATE public.quotations SET
+        customer_id = (quotation_data->>'customer_id')::BIGINT, customer_name_temp = quotation_data->>'customer_name_temp', issue_date = (quotation_data->>'issue_date')::DATE, status = (quotation_data->>'status')::public.document_status,
+        subtotal = (quotation_data->>'subtotal')::NUMERIC, tax_rate = (quotation_data->>'tax_rate')::NUMERIC, tax_amount = (quotation_data->>'tax_amount')::NUMERIC, total = (quotation_data->>'total')::NUMERIC,
+        is_taxable = (quotation_data->>'is_taxable')::BOOLEAN, discount_amount = (quotation_data->>'discount_amount')::NUMERIC, discount_type = (quotation_data->>'discount_type')::TEXT,
+        contact_person = quotation_data->>'contact_person', project_name = quotation_data->>'project_name', quotation_type = quotation_data->>'quotation_type'
+    WHERE id = p_quotation_id;
+    DELETE FROM public.quotation_items WHERE quotation_id = p_quotation_id;
+    IF items_data IS NOT NULL THEN
+        FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
+            INSERT INTO public.quotation_items (quotation_id, product_id, description, unit, quantity, price)
+            VALUES (p_quotation_id, (item->>'product_id')::BIGINT, item->>'description', item->>'unit', (item->>'quantity')::INT, (item->>'price')::NUMERIC);
+        END LOOP;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- 4. Update the function that converts a quotation to an invoice.
+-- This is the key part: if the quotation was for a new customer, this function will now CREATE that customer in the main 'customers' table before creating the invoice.
+CREATE OR REPLACE FUNCTION public.convert_quotation_to_invoice(p_quotation_id BIGINT)
+RETURNS BIGINT AS $$
+DECLARE
+  v_quotation RECORD;
+  v_invoice_id BIGINT;
+  v_item RECORD;
+  v_customer_id BIGINT;
+BEGIN
+  SELECT * INTO v_quotation FROM public.quotations WHERE id = p_quotation_id;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Quotation not found or you do not have permission.'; END IF;
+
+  -- If customer_id is null, create a new customer from the temporary name
+  IF v_quotation.customer_id IS NULL AND v_quotation.customer_name_temp IS NOT NULL THEN
+    INSERT INTO public.customers (name, created_by)
+    VALUES (v_quotation.customer_name_temp, auth.uid())
+    RETURNING id INTO v_customer_id;
+
+    -- Optional: Update the original quotation with the new customer_id for historical reference
+    UPDATE public.quotations SET customer_id = v_customer_id WHERE id = p_quotation_id;
+  ELSE
+    v_customer_id := v_quotation.customer_id;
+  END IF;
+
+  IF v_customer_id IS NULL THEN
+    RAISE EXCEPTION 'Customer could not be determined for the invoice.';
+  END IF;
+
+  INSERT INTO public.invoices (customer_id, quotation_id, issue_date, due_date, status, subtotal, tax_rate, tax_amount, total, paid_amount, created_by)
+  VALUES (v_customer_id, p_quotation_id, CURRENT_DATE, CURRENT_DATE + 30, 'draft', v_quotation.subtotal, v_quotation.tax_rate, v_quotation.tax_amount, v_quotation.total, 0.00, auth.uid())
+  RETURNING id INTO v_invoice_id;
+
+  FOR v_item IN SELECT product_id, description, unit, quantity, price FROM public.quotation_items WHERE quotation_id = p_quotation_id
+  LOOP
+    INSERT INTO public.invoice_items (invoice_id, product_id, description, unit, quantity, price) VALUES (v_invoice_id, v_item.product_id, v_item.description, v_item.unit, v_item.quantity, v_item.price);
+  END LOOP;
+
+  UPDATE public.quotations SET status = 'accepted' WHERE id = p_quotation_id;
+  RETURN v_invoice_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- The following is the original script. It is included to ensure all necessary functions and tables are present.
+-- It is safe to run the entire block.
 
 -- Drop existing objects to ensure a clean slate.
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP FUNCTION IF EXISTS public.sync_user_role_to_auth() CASCADE;
 DROP FUNCTION IF EXISTS public.get_current_user_role() CASCADE;
-DROP FUNCTION IF EXISTS public.convert_quotation_to_invoice(BIGINT) CASCADE;
-DROP FUNCTION IF EXISTS public.create_quotation_with_items(JSONB, JSONB) CASCADE;
-DROP FUNCTION IF EXISTS public.update_quotation_with_items(BIGINT, JSONB, JSONB) CASCADE;
+-- DROP FUNCTION IF EXISTS public.convert_quotation_to_invoice(BIGINT) CASCADE; -- Handled above
+-- DROP FUNCTION IF EXISTS public.create_quotation_with_items(JSONB, JSONB) CASCADE; -- Handled above
+-- DROP FUNCTION IF EXISTS public.update_quotation_with_items(BIGINT, JSONB, JSONB) CASCADE; -- Handled above
 DROP FUNCTION IF EXISTS public.create_invoice_with_items(JSONB, JSONB) CASCADE;
 DROP FUNCTION IF EXISTS public.update_invoice_with_items(BIGINT, JSONB, JSONB) CASCADE;
 DROP FUNCTION IF EXISTS public.create_supplier_invoice_with_items(JSONB, JSONB) CASCADE;
@@ -135,7 +237,7 @@ CREATE POLICY "Authenticated users can manage products" ON public.products FOR A
 
 -- Quotations
 CREATE TYPE public.document_status AS ENUM ('draft', 'sent', 'accepted', 'rejected', 'paid', 'overdue', 'unpaid', 'partially_paid');
-CREATE TABLE public.quotations (id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, customer_id BIGINT REFERENCES public.customers(id) ON DELETE SET NULL, issue_date DATE NOT NULL DEFAULT CURRENT_DATE, status public.document_status NOT NULL DEFAULT 'draft', subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0.00, tax_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.00, tax_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00, total NUMERIC(10, 2) NOT NULL DEFAULT 0.00, created_at TIMESTAMPTZ DEFAULT NOW(), created_time TIME DEFAULT CURRENT_TIME, created_by UUID REFERENCES public.users(id) ON DELETE SET NULL DEFAULT auth.uid(), is_taxable BOOLEAN DEFAULT true, discount_amount NUMERIC(10, 2) DEFAULT 0, discount_type TEXT DEFAULT 'amount', contact_person TEXT, project_name TEXT, quotation_type TEXT);
+CREATE TABLE public.quotations (id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY, customer_id BIGINT REFERENCES public.customers(id) ON DELETE SET NULL, issue_date DATE NOT NULL DEFAULT CURRENT_DATE, status public.document_status NOT NULL DEFAULT 'draft', subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0.00, tax_rate NUMERIC(5, 2) NOT NULL DEFAULT 0.00, tax_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00, total NUMERIC(10, 2) NOT NULL DEFAULT 0.00, created_at TIMESTAMPTZ DEFAULT NOW(), created_time TIME DEFAULT CURRENT_TIME, created_by UUID REFERENCES public.users(id) ON DELETE SET NULL DEFAULT auth.uid(), is_taxable BOOLEAN DEFAULT true, discount_amount NUMERIC(10, 2) DEFAULT 0, discount_type TEXT DEFAULT 'amount', contact_person TEXT, project_name TEXT, quotation_type TEXT, customer_name_temp TEXT);
 ALTER TABLE public.quotations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can manage quotations based on ownership and role" ON public.quotations FOR ALL
 USING (created_by = auth.uid() OR ((auth.jwt() -> 'raw_user_meta_data' ->> 'role')::text) IN ('admin', 'accountant') OR (((auth.jwt() -> 'raw_user_meta_data' ->> 'role')::text) = 'sales_manager' AND created_by IN (SELECT id FROM public.users WHERE manager_id = auth.uid())));
@@ -176,52 +278,6 @@ ALTER TABLE public.payment_vouchers ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Accountants and admins can manage payments" ON public.payment_vouchers FOR ALL USING ( ((auth.jwt() -> 'raw_user_meta_data' ->> 'role')::text) IN ('admin', 'accountant') );
 
 -- ================== RPC FUNCTIONS ==================
-
--- QUOTATIONS --
-CREATE OR REPLACE FUNCTION public.create_quotation_with_items(quotation_data JSONB, items_data JSONB)
-RETURNS BIGINT AS $$
-DECLARE
-    new_quotation_id BIGINT;
-    item JSONB;
-BEGIN
-    INSERT INTO public.quotations (customer_id, issue_date, status, subtotal, tax_rate, tax_amount, total, created_by, is_taxable, discount_amount, discount_type, contact_person, project_name, quotation_type)
-    VALUES (
-        (quotation_data->>'customer_id')::BIGINT, (quotation_data->>'issue_date')::DATE, (quotation_data->>'status')::public.document_status,
-        (quotation_data->>'subtotal')::NUMERIC, (quotation_data->>'tax_rate')::NUMERIC, (quotation_data->>'tax_amount')::NUMERIC, (quotation_data->>'total')::NUMERIC,
-        auth.uid(), (quotation_data->>'is_taxable')::BOOLEAN, (quotation_data->>'discount_amount')::NUMERIC, (quotation_data->>'discount_type')::TEXT,
-        quotation_data->>'contact_person', quotation_data->>'project_name', quotation_data->>'quotation_type'
-    ) RETURNING id INTO new_quotation_id;
-
-    IF items_data IS NOT NULL THEN
-        FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
-            INSERT INTO public.quotation_items (quotation_id, product_id, description, unit, quantity, price)
-            VALUES (new_quotation_id, (item->>'product_id')::BIGINT, item->>'description', item->>'unit', (item->>'quantity')::INT, (item->>'price')::NUMERIC);
-        END LOOP;
-    END IF;
-    RETURN new_quotation_id;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION public.update_quotation_with_items(p_quotation_id BIGINT, quotation_data JSONB, items_data JSONB)
-RETURNS VOID AS $$
-DECLARE
-    item JSONB;
-BEGIN
-    UPDATE public.quotations SET
-        customer_id = (quotation_data->>'customer_id')::BIGINT, issue_date = (quotation_data->>'issue_date')::DATE, status = (quotation_data->>'status')::public.document_status,
-        subtotal = (quotation_data->>'subtotal')::NUMERIC, tax_rate = (quotation_data->>'tax_rate')::NUMERIC, tax_amount = (quotation_data->>'tax_amount')::NUMERIC, total = (quotation_data->>'total')::NUMERIC,
-        is_taxable = (quotation_data->>'is_taxable')::BOOLEAN, discount_amount = (quotation_data->>'discount_amount')::NUMERIC, discount_type = (quotation_data->>'discount_type')::TEXT,
-        contact_person = quotation_data->>'contact_person', project_name = quotation_data->>'project_name', quotation_type = quotation_data->>'quotation_type'
-    WHERE id = p_quotation_id;
-    DELETE FROM public.quotation_items WHERE quotation_id = p_quotation_id;
-    IF items_data IS NOT NULL THEN
-        FOR item IN SELECT * FROM jsonb_array_elements(items_data) LOOP
-            INSERT INTO public.quotation_items (quotation_id, product_id, description, unit, quantity, price)
-            VALUES (p_quotation_id, (item->>'product_id')::BIGINT, item->>'description', item->>'unit', (item->>'quantity')::INT, (item->>'price')::NUMERIC);
-        END LOOP;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
 
 -- INVOICES --
 CREATE OR REPLACE FUNCTION public.create_invoice_with_items(invoice_data JSONB, items_data JSONB)
@@ -314,23 +370,5 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- CONVERT QUOTATION --
-CREATE OR REPLACE FUNCTION public.convert_quotation_to_invoice(p_quotation_id BIGINT)
-RETURNS BIGINT AS $$
-DECLARE
-  v_quotation RECORD; v_invoice_id BIGINT; v_item RECORD;
-BEGIN
-  SELECT * INTO v_quotation FROM public.quotations WHERE id = p_quotation_id;
-  IF NOT FOUND THEN RAISE EXCEPTION 'Quotation not found or you do not have permission.'; END IF;
-  INSERT INTO public.invoices (customer_id, quotation_id, issue_date, due_date, status, subtotal, tax_rate, tax_amount, total, paid_amount, created_by)
-  VALUES (v_quotation.customer_id, p_quotation_id, CURRENT_DATE, CURRENT_DATE + 30, 'draft', v_quotation.subtotal, v_quotation.tax_rate, v_quotation.tax_amount, v_quotation.total, 0.00, auth.uid())
-  RETURNING id INTO v_invoice_id;
-  FOR v_item IN SELECT product_id, description, unit, quantity, price FROM public.quotation_items WHERE quotation_id = p_quotation_id
-  LOOP
-    INSERT INTO public.invoice_items (invoice_id, product_id, description, unit, quantity, price) VALUES (v_invoice_id, v_item.product_id, v_item.description, v_item.unit, v_item.quantity, v_item.price);
-  END LOOP;
-  UPDATE public.quotations SET status = 'accepted' WHERE id = p_quotation_id;
-  RETURN v_invoice_id;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.convert_quotation_to_invoice(BIGINT) TO authenticated;
 */

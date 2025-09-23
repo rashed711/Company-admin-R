@@ -51,7 +51,7 @@ const QuotationsList = () => {
     { header: t('quotation_no'), accessor: 'id' },
     { header: t('time'), accessor: 'created_time' },
     { header: t('date'), accessor: 'issue_date' },
-    { header: t('customer'), accessor: 'customer', render: (_val, row) => row.customer?.name || '-' },
+    { header: t('customer'), accessor: 'customer', render: (_val, row) => row.customer?.name || row.customer_name_temp || '-' },
     { header: t('contact_person'), accessor: 'contact_person' },
     { header: t('project_name'), accessor: 'project_name' },
     { header: t('created_by'), accessor: 'created_by_user', render: (val) => val?.full_name || '-' },
